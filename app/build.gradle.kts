@@ -1,9 +1,11 @@
+private val VERSION_CODE = 1
+private val VERSION_NAME = "0.0.1"
+
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.com.android.application)
     alias(libs.plugins.org.jetbrains.kotlin.android)
 }
-
 android {
     namespace = "com.justas.owncommunity"
     compileSdk = 33
@@ -12,8 +14,8 @@ android {
         applicationId = "com.justas.owncommunity"
         minSdk = 24
         targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = VERSION_CODE
+        versionName = VERSION_NAME
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -26,7 +28,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -51,7 +53,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)
