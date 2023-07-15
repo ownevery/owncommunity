@@ -1,4 +1,4 @@
-package com.justas.owncommunity.ui.theme
+package com.justas.owncommunity.utils.compose.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
