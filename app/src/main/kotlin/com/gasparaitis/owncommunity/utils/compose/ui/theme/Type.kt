@@ -1,6 +1,5 @@
 package com.gasparaitis.owncommunity.utils.compose.ui.theme
 
-import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -21,25 +20,30 @@ object FontSizes {
     val title = 18.sp
 }
 
-val Typography = Typography(
-    titleLarge = TextStyle(
+object TextStyles {
+    val title: TextStyle = TextStyle(
+        color = Colors.PureWhite,
         fontFamily = hkGrotesk,
         fontSize = FontSizes.title,
         fontWeight = FontWeight.Bold,
-    ),
-    bodyLarge = TextStyle(
+    )
+    val body: TextStyle = TextStyle(
+        color = Colors.PureWhite,
         fontFamily = hkGrotesk,
         fontSize = FontSizes.body,
         fontWeight = FontWeight.Medium,
-    ),
-    bodyMedium = TextStyle(
+    )
+    val secondary: TextStyle = TextStyle(
+        color = Colors.PureWhite,
         fontFamily = hkGrotesk,
         fontSize = FontSizes.secondary,
         fontWeight = FontWeight.Medium,
-    ),
-    bodySmall = TextStyle(
+    )
+    val tertiary: TextStyle = TextStyle(
+        color = Colors.PureWhite,
         fontFamily = hkGrotesk,
         fontSize = FontSizes.tertiary,
         fontWeight = FontWeight.Medium,
-    ),
-)
+    )
+}
+
