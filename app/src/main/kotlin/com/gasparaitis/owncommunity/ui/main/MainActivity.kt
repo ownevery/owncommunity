@@ -1,4 +1,4 @@
-package com.justas.owncommunity.ui.main
+package com.gasparaitis.owncommunity.ui.main
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,7 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
-import com.justas.owncommunity.utils.compose.ui.theme.AppTheme
+import com.gasparaitis.owncommunity.utils.compose.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    Text("Android")
+                    Text("Android downloaded from GitHub")
                 }
             }
         }

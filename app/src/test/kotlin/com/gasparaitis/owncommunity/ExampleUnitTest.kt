@@ -1,4 +1,4 @@
-package com.justas.owncommunity
+package com.gasparaitis.owncommunity
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

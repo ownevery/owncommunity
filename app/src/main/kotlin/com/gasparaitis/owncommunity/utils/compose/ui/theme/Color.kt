@@ -1,4 +1,4 @@
-package com.justas.owncommunity.utils.compose.ui.theme
+package com.gasparaitis.owncommunity.utils.compose.ui.theme
 
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color

@@ -13,13 +13,11 @@
         android:theme="@style/Theme.Owncommunity"
         tools:targetApi="31">
         <activity
-            android:name=".ui.main.MainActivity"
+            android:name="com.gasparaitis.owncommunity.ui.main.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.Owncommunity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

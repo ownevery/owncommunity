@@ -7,11 +7,11 @@ plugins {
     alias(libs.plugins.org.jetbrains.kotlin.android)
 }
 android {
-    namespace = "com.justas.owncommunity"
+    namespace = "com.gasparaitis.owncommunity"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.justas.owncommunity"
+        applicationId = "com.gasparaitis.owncommunity"
         minSdk = 24
         targetSdk = 33
         versionCode = VERSION_CODE

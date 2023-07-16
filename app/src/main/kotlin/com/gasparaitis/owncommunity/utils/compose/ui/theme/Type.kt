@@ -1,4 +1,4 @@
-package com.justas.owncommunity.utils.compose.ui.theme
+package com.gasparaitis.owncommunity.utils.compose.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.justas.owncommunity.R
+import com.gasparaitis.owncommunity.R
 
 val hkGrotesk = FontFamily(
     Font(R.font.hkgrotesk_medium, FontWeight.Medium),
