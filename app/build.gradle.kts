@@ -1,27 +1,23 @@
-private val VERSION_CODE = 1
-private val VERSION_NAME = "0.0.1"
-
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.com.android.application)
-    alias(libs.plugins.org.jetbrains.kotlin.android)
-    alias(libs.plugins.com.google.gms.google.services)
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.gms)
+    alias(libs.plugins.ksp)
 }
 android {
-    namespace = "com.gasparaitis.owncommunity"
-    compileSdk = 33
+    namespace = libs.versions.build.namespace.get()
+    compileSdk = libs.versions.build.sdk.compile.get().toIntOrNull()
 
     defaultConfig {
-        applicationId = "com.gasparaitis.owncommunity"
-        minSdk = 24
-        targetSdk = 33
-        versionCode = VERSION_CODE
-        versionName = VERSION_NAME
+        applicationId = libs.versions.build.namespace.get()
+        minSdk = libs.versions.build.sdk.min.get().toIntOrNull()
+        targetSdk = libs.versions.build.sdk.target.get().toIntOrNull()
+        versionCode = libs.versions.build.code.get().toIntOrNull()
+        versionName = libs.versions.build.name.get()
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        testInstrumentationRunner = libs.versions.build.testInstrumentationRunner.get()
+        vectorDrawables.useSupportLibrary = true
     }
 
     buildTypes {
@@ -54,6 +50,7 @@ android {
 }
 
 dependencies {
+    // Core libraries
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)
@@ -61,7 +58,13 @@ dependencies {
     implementation(libs.ui)
     implementation(libs.ui.graphics)
     implementation(libs.ui.tooling.preview)
+    implementation(libs.material)
     implementation(libs.material3)
+
+    // Compose Destinations
+    implementation(libs.compose.destinations.core)
+    ksp(libs.compose.destinations.ksp)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
