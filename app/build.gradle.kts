@@ -5,6 +5,7 @@ private val VERSION_NAME = "0.0.1"
 plugins {
     alias(libs.plugins.com.android.application)
     alias(libs.plugins.org.jetbrains.kotlin.android)
+    alias(libs.plugins.com.google.gms.google.services)
 }
 android {
     namespace = "com.gasparaitis.owncommunity"
