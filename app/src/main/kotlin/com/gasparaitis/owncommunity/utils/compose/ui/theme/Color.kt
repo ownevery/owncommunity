@@ -11,7 +11,7 @@ object Colors {
     val SocialPink = Color(0xFFF62E8E)
     val SocialBlue = Color(0xFF2E8AF6)
     val DarkBlack = Color(0xFF181A1C)
-    val LightWhite = Color(0xFFECEBED)
+    val SocialWhite = Color(0xFFECEBED)
     val PureBlack = Color(0xFF000000)
     val PureWhite = Color(0xFFFFFFFF)
     val Gray = Color(0xFF323436)
