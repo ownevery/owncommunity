@@ -22,10 +22,10 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Create google-services.json
-      run: cat /home/runner/work/owncommunity/app/google-services.json | base64
+      run: cat /home/runner/work/owncommunity/owncommunity/app/google-services.json | base64
     - name: Populate google-services.json
       env:
         DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
-      run: echo $DATA > /home/runner/work/owncommunity/app/google-services.json
+      run: echo $DATA > /home/runner/work/owncommunity/owncommunity/app/google-services.json
     - name: Build and run tests
       run: ./gradlew testDebug
