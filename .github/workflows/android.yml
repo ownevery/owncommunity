@@ -13,14 +13,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: set up JDK 17
+    - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: gradle
-
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+    - name: Create google-services.json
+      run: cat /home/runner/work/owncommunity/owncommunity/app/google-services.json | base64
+    - name: Populate google-services.json
+      env:
+        DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: echo $DATA > /home/runner/work/owncommunity/owncommunity/app/google-services.json
     - name: Build and run tests
       run: ./gradlew testDebug
