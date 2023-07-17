@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -59,8 +60,7 @@ fun HomeScreen(
     HomeScreenContent(
         posts = state.value.posts,
         stories = state.value.stories,
-        onStoryClick = viewModel::onStoryClick,
-        onItemActionClick = viewModel::onItemActionClick,
+        onAction = viewModel::onAction,
     )
 }
 
@@ -68,8 +68,7 @@ fun HomeScreen(
 private fun HomeScreenContent(
     posts: List<HomeItem>,
     stories: List<HomeStory>,
-    onStoryClick: (HomeStory) -> Unit,
-    onItemActionClick: (HomeItem) -> Unit,
+    onAction: (HomeAction) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         HomeTopRow()
@@ -80,10 +79,13 @@ private fun HomeScreenContent(
         ) {
             HomeStoryHorizontalPager(
                 items = stories,
-                onStoryClick = onStoryClick,
+                onStoryClick = { onAction(HomeAction.OnStoryClick(it)) },
             )
             repeat(posts.size) { index ->
-                HomeItem(item = posts[index], onActionClick = onItemActionClick)
+                HomeItem(
+                    item = posts[index],
+                    onAction = onAction,
+                )
             }
         }
     }
@@ -266,7 +268,7 @@ private fun HomeStoryHorizontalPagerItemDarkGradientBox(
 @Composable
 fun HomeItem(
     item: HomeItem,
-    onActionClick: (HomeItem) -> Unit,
+    onAction: (HomeAction) -> Unit,
 ) {
     Divider(
         modifier = Modifier.fillMaxWidth(),
@@ -283,7 +285,10 @@ fun HomeItem(
             postedTimeAgo = item.postedTimeAgo,
         )
         HomeItemBody(item = item)
-        HomeItemBottomRow(item = item, onActionClick = onActionClick)
+        HomeItemBottomRow(
+            item = item,
+            onAction = onAction,
+        )
         Spacer(Modifier.height(16.dp))
     }
 }
@@ -299,7 +304,6 @@ fun HomeItemBody(item: HomeItem) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeItemImageView(
     images: List<Int>,
@@ -500,13 +504,24 @@ private fun HomeItemBodyText(
 
 @Composable
 fun HomeItemBottomRow(
-    onActionClick: (HomeItem) -> Unit,
     item: HomeItem,
+    onAction: (HomeAction) -> Unit,
 ) {
     val actions = listOf(
-        HomeAction.like(item.likeCount, item.isLiked),
-        HomeAction.comment(item.commentCount),
-        HomeAction.share(item.shareCount, item.isShared),
+        HomeActionItem.like(
+            count = item.likeCount.toString(),
+            isActive = item.isLiked,
+            action = HomeAction.OnPostLikeClick(item),
+        ),
+        HomeActionItem.comment(
+            count = item.commentCount.toString(),
+            action = HomeAction.OnPostCommentClick(item),
+        ),
+        HomeActionItem.share(
+            count = item.shareCount.toString(),
+            isActive = item.isShared,
+            action = HomeAction.OnPostShareClick(item),
+        ),
     )
     Row(
         modifier = Modifier
@@ -516,12 +531,7 @@ fun HomeItemBottomRow(
     ) {
         repeat(actions.size) { index ->
             HomeItemActionRow(
-                onClick = {
-                    when (index) {
-                        0 -> onActionClick(item.copy(isLiked = item.isLiked.not()))
-                        2 -> onActionClick(item.copy(isShared = item.isShared.not()))
-                    }
-                },
+                onClick = { onAction(actions[index].action) },
                 isActive = actions[index].isActive,
                 painter = painterResource(id = actions[index].icon),
                 description = actions[index].description,
@@ -529,7 +539,10 @@ fun HomeItemBottomRow(
             )
         }
         Spacer(Modifier.weight(1f))
-        HomeItemBookmarkIcon()
+        HomeItemBookmarkIconButton(
+            onClick = { onAction(HomeAction.OnPostBookmarkClick(item)) },
+            isActive = item.isBookmarked,
+        )
     }
 }
 
@@ -562,10 +575,15 @@ private fun HomeItemActionRow(
 }
 
 @Composable
-private fun HomeItemBookmarkIcon() {
-    Icon(
-        painter = painterResource(id = R.drawable.ic_bookmark),
-        tint = Colors.SocialWhite,
-        contentDescription = "Bookmark",
-    )
+private fun HomeItemBookmarkIconButton(
+    onClick: () -> Unit,
+    isActive: Boolean,
+) {
+    IconButton(onClick) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_bookmark),
+            tint = if (isActive) Colors.SocialPink else Colors.SocialWhite,
+            contentDescription = "Bookmark",
+        )
+    }
 }
