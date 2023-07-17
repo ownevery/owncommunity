@@ -7,4 +7,5 @@
     <string name="bottom_navigation_create">Create</string>
     <string name="bottom_navigation_notifications">Notifications</string>
     <string name="bottom_navigation_profile">Profile</string>
+    <string name="home_title">Good Morning, Justas.</string>
 </resources>
