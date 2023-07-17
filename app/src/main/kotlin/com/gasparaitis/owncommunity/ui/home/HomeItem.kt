@@ -24,38 +24,53 @@ data class HomeItem(
     val authorName: String = "",
     val postedTimeAgo: String = "",
     val bodyText: String = "",
-    val likeCount: String = "",
-    val commentCount: String = "",
-    val shareCount: String = "",
+    val likeCount: Int = 0,
+    val commentCount: Int = 0,
+    val shareCount: Int = 0,
     val isLiked: Boolean = false,
     val isShared: Boolean = false,
     val isBookmarked: Boolean = false,
 )
 
-data class HomeAction(
+data class HomeActionItem(
     @DrawableRes val icon: Int,
     val description: String,
     val count: String,
     val isActive: Boolean,
+    val action: HomeAction,
 ) {
     companion object {
-        fun like(count: String, isActive: Boolean) = HomeAction(
+        fun like(
+            count: String,
+            isActive: Boolean,
+            action: HomeAction,
+        ) = HomeActionItem(
             icon = R.drawable.ic_like,
             description = "Like",
             count = count,
             isActive = isActive,
+            action = action,
         )
-        fun comment(count: String) = HomeAction(
+        fun comment(
+            count: String,
+            action: HomeAction,
+        ) = HomeActionItem(
             icon = R.drawable.ic_comment,
             description = "Comment",
             count = count,
             isActive = false,
+            action = action,
         )
-        fun share(count: String, isActive: Boolean) = HomeAction(
+        fun share(
+            count: String,
+            isActive: Boolean,
+            action: HomeAction,
+        ) = HomeActionItem(
             icon = R.drawable.ic_share,
             description = "Share",
             count = count,
             isActive = isActive,
+            action = action,
         )
     }
 }
