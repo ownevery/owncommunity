@@ -308,17 +308,62 @@ fun HomeItemImageView(
 ) {
     if (images.isEmpty()) return
     if (images.size == 1) {
-        HomeItemImage(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-                .padding(horizontal = 24.dp),
+        HomeItemSingleImage(
             image = images.first(),
-            width = itemWidth,
-            height = itemHeight,
+            itemWidth = itemWidth,
+            itemHeight = itemHeight,
         )
         return
     }
+    HomeItemImagePager(
+        images = images,
+        itemWidth = itemWidth,
+        itemHeight = itemHeight,
+    )
+}
+
+@Composable
+private fun HomeItemImage(
+    @DrawableRes image: Int,
+    width: Dp,
+    height: Dp,
+    modifier: Modifier = Modifier,
+) {
+    Image(
+        modifier = Modifier
+            .then(modifier)
+            .size(width = width, height = height)
+            .clip(RoundedCornerShape(16.dp)),
+        painter = painterResource(id = image),
+        contentScale = ContentScale.FillBounds,
+        contentDescription = "Post image",
+    )
+}
+
+@Composable
+private fun HomeItemSingleImage(
+    @DrawableRes image: Int,
+    itemWidth: Dp,
+    itemHeight: Dp,
+) {
+    HomeItemImage(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp)
+            .padding(horizontal = 24.dp),
+        image = image,
+        width = itemWidth,
+        height = itemHeight,
+    )
+}
+
+@Composable
+@OptIn(ExperimentalFoundationApi::class)
+private fun HomeItemImagePager(
+    images: List<Int>,
+    itemWidth: Dp,
+    itemHeight: Dp,
+) {
     val state = rememberPagerState()
     Column {
         HorizontalPager(
@@ -343,24 +388,6 @@ fun HomeItemImageView(
             currentPage = state.currentPage,
         )
     }
-}
-
-@Composable
-private fun HomeItemImage(
-    @DrawableRes image: Int,
-    width: Dp,
-    height: Dp,
-    modifier: Modifier = Modifier,
-) {
-    Image(
-        modifier = Modifier
-            .then(modifier)
-            .size(width = width, height = height)
-            .clip(RoundedCornerShape(16.dp)),
-        painter = painterResource(id = image),
-        contentScale = ContentScale.FillBounds,
-        contentDescription = "Post image",
-    )
 }
 
 @Composable
@@ -426,8 +453,8 @@ private fun HomeItemTopRowProfileImage(
 
 @Composable
 private fun HomeItemTopRowTextColumn(
-    name: String = "Jacob Washington",
-    time: String = "20m ago",
+    name: String,
+    time: String,
 ) {
     Column(
         modifier = Modifier.padding(start = 8.dp),
