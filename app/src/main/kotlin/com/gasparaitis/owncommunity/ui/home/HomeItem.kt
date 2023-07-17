@@ -2,16 +2,14 @@ package com.gasparaitis.owncommunity.ui.home
 
 import androidx.annotation.DrawableRes
 import com.gasparaitis.owncommunity.R
-import com.gasparaitis.owncommunity.ui.home.HomeUiStateDemo.post1
-import com.gasparaitis.owncommunity.ui.home.HomeUiStateDemo.post2
-import com.gasparaitis.owncommunity.ui.home.HomeUiStateDemo.post3
-import com.gasparaitis.owncommunity.ui.home.HomeUiStateDemo.post4
-import com.gasparaitis.owncommunity.ui.home.HomeUiStateDemo.story1
-import com.gasparaitis.owncommunity.ui.home.HomeUiStateDemo.story2
-import com.gasparaitis.owncommunity.ui.home.HomeUiStateDemo.story3
-import com.gasparaitis.owncommunity.ui.home.HomeUiStateDemo.story4
 import com.gasparaitis.owncommunity.utils.demo.HomeUiStateDemo.post1
+import com.gasparaitis.owncommunity.utils.demo.HomeUiStateDemo.post2
+import com.gasparaitis.owncommunity.utils.demo.HomeUiStateDemo.post3
+import com.gasparaitis.owncommunity.utils.demo.HomeUiStateDemo.post4
 import com.gasparaitis.owncommunity.utils.demo.HomeUiStateDemo.story1
+import com.gasparaitis.owncommunity.utils.demo.HomeUiStateDemo.story2
+import com.gasparaitis.owncommunity.utils.demo.HomeUiStateDemo.story3
+import com.gasparaitis.owncommunity.utils.demo.HomeUiStateDemo.story4
 import java.util.UUID
 
 data class HomeUiState(
