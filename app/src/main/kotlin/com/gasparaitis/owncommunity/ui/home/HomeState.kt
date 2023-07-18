@@ -7,14 +7,12 @@ data class HomeState(
     val areAllNotificationsRead: Boolean,
     val posts: List<HomePost>,
     val stories: List<HomeStory>,
-    val navEvent: HomeNavEvent?,
 ) {
     companion object {
         val EMPTY = HomeState(
             areAllNotificationsRead = false,
             posts = listOf(),
             stories = listOf(),
-            navEvent = null,
         )
     }
 }
