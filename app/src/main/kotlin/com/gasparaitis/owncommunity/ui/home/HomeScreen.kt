@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,46 +45,59 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gasparaitis.owncommunity.R
-import com.gasparaitis.owncommunity.utils.compose.ui.defaultGradientBrush
-import com.gasparaitis.owncommunity.utils.compose.ui.slightDarkGradientBrush
-import com.gasparaitis.owncommunity.utils.compose.ui.theme.Colors
-import com.gasparaitis.owncommunity.utils.compose.ui.theme.TextStyles
+import com.gasparaitis.owncommunity.ui.theme.Colors
+import com.gasparaitis.owncommunity.ui.theme.TextStyles
+import com.gasparaitis.owncommunity.ui.theme.defaultGradientBrush
+import com.gasparaitis.owncommunity.ui.theme.slightDarkGradientBrush
+import com.gasparaitis.owncommunity.utils.home.entity.HomeActionItem
+import com.gasparaitis.owncommunity.utils.home.entity.HomePost
+import com.gasparaitis.owncommunity.utils.home.entity.HomePostType
+import com.gasparaitis.owncommunity.utils.home.entity.HomeStateDemo.posts
+import com.gasparaitis.owncommunity.utils.home.entity.HomeStory
 import com.gasparaitis.owncommunity.utils.noRippleClickable
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 @Destination(start = true)
 @Composable
 fun HomeScreen(
+    navigator: DestinationsNavigator,
     viewModel: HomeViewModel = viewModel(),
 ) {
     val state = viewModel.state.collectAsState()
     HomeScreenContent(
-        posts = state.value.posts,
-        stories = state.value.stories,
+        state = state.value,
         onAction = viewModel::onAction,
     )
+    LaunchedEffect(Unit) {
+        viewModel.navEvent.collect {
+            navigator.navigate(it.destination)
+        }
+    }
 }
 
 @Composable
 private fun HomeScreenContent(
-    posts: List<HomeItem>,
-    stories: List<HomeStory>,
+    state: HomeState,
     onAction: (HomeAction) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        HomeTopRow()
+        HomeTopRow(
+            isNotificationBadgeEnabled = !state.areAllNotificationsRead,
+            onNotificationIconClick = { onAction(HomeAction.OnNotificationIconClick) }
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
             HomeStoryHorizontalPager(
-                items = stories,
+                items = state.stories,
                 onStoryClick = { onAction(HomeAction.OnStoryClick(it)) },
             )
             repeat(posts.size) { index ->
                 HomeItem(
-                    item = posts[index],
+                    item = state.posts[index],
                     onAction = onAction,
                 )
             }
@@ -92,7 +106,10 @@ private fun HomeScreenContent(
 }
 
 @Composable
-fun HomeTopRow() {
+fun HomeTopRow(
+    onNotificationIconClick: () -> Unit,
+    isNotificationBadgeEnabled: Boolean
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -104,7 +121,10 @@ fun HomeTopRow() {
         HomeTopRowTitle(
             title = stringResource(id = R.string.home_title),
         )
-        HomeTopRowNotificationIconButton()
+        HomeTopRowNotificationIconButton(
+            isBadgeEnabled = isNotificationBadgeEnabled,
+            onClick = onNotificationIconClick,
+        )
     }
 }
 
@@ -119,8 +139,19 @@ private fun HomeTopRowTitle(
 }
 
 @Composable
-private fun HomeTopRowNotificationIconButton() {
-    Box {
+private fun HomeTopRowNotificationIconButton(
+    onClick: () -> Unit,
+    isBadgeEnabled: Boolean
+) {
+    Box(
+        modifier = Modifier.noRippleClickable(onClick),
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_message),
+            tint = Colors.PureWhite,
+            contentDescription = "Favorite",
+        )
+        if (!isBadgeEnabled) return@Box
         Icon(
             modifier = Modifier
                 .size(10.dp)
@@ -129,11 +160,6 @@ private fun HomeTopRowNotificationIconButton() {
             painter = painterResource(id = R.drawable.ic_notification_badge),
             tint = Color.Unspecified,
             contentDescription = "Notification badge",
-        )
-        Icon(
-            painter = painterResource(id = R.drawable.ic_message),
-            tint = Colors.PureWhite,
-            contentDescription = "Favorite",
         )
     }
 }
@@ -267,7 +293,7 @@ private fun HomeStoryHorizontalPagerItemDarkGradientBox(
 
 @Composable
 fun HomeItem(
-    item: HomeItem,
+    item: HomePost,
     onAction: (HomeAction) -> Unit,
 ) {
     Divider(
@@ -282,9 +308,12 @@ fun HomeItem(
         HomeItemTopRow(
             profileImage = painterResource(id = item.profileImage),
             authorName = item.authorName,
-            postedTimeAgo = item.postedTimeAgo,
+            postedTimeAgo = item.postedTimeAgo
+        ) { onAction(HomeAction.OnPostAuthorClick(item)) }
+        HomeItemBody(
+            item = item,
+            onClick = { onAction(HomeAction.OnPostBodyClick(item)) },
         )
-        HomeItemBody(item = item)
         HomeItemBottomRow(
             item = item,
             onAction = onAction,
@@ -294,13 +323,20 @@ fun HomeItem(
 }
 
 @Composable
-fun HomeItemBody(item: HomeItem) {
-    HomeItemBodyText(
-        text = item.bodyText,
-        singleLine = item.type !is HomeItemType.TextOnly,
-    )
-    if (item.type is HomeItemType.Images) {
-        HomeItemImageView(images = item.type.images)
+fun HomeItemBody(
+    item: HomePost,
+    onClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.noRippleClickable(onClick),
+    ) {
+        HomeItemBodyText(
+            text = item.bodyText,
+            singleLine = item.type !is HomePostType.TextOnly,
+        )
+        if (item.type is HomePostType.Images) {
+            HomeItemImageView(images = item.type.images)
+        }
     }
 }
 
@@ -422,6 +458,7 @@ private fun HomeItemTopRow(
     profileImage: Painter,
     authorName: String,
     postedTimeAgo: String,
+    onAuthorClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -429,13 +466,17 @@ private fun HomeItemTopRow(
             .padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        HomeItemTopRowProfileImage(
-            image = profileImage,
-        )
-        HomeItemTopRowTextColumn(
-            name = authorName,
-            time = postedTimeAgo,
-        )
+        Row(
+            modifier = Modifier.noRippleClickable(onAuthorClick)
+        ) {
+            HomeItemTopRowProfileImage(
+                image = profileImage,
+            )
+            HomeItemTopRowTextColumn(
+                name = authorName,
+                time = postedTimeAgo,
+            )
+        }
         Spacer(Modifier.weight(1f))
         HomeItemTopRowMoreButton()
     }
@@ -504,25 +545,10 @@ private fun HomeItemBodyText(
 
 @Composable
 fun HomeItemBottomRow(
-    item: HomeItem,
+    item: HomePost,
     onAction: (HomeAction) -> Unit,
 ) {
-    val actions = listOf(
-        HomeActionItem.like(
-            count = item.likeCount.toString(),
-            isActive = item.isLiked,
-            action = HomeAction.OnPostLikeClick(item),
-        ),
-        HomeActionItem.comment(
-            count = item.commentCount.toString(),
-            action = HomeAction.OnPostCommentClick(item),
-        ),
-        HomeActionItem.share(
-            count = item.shareCount.toString(),
-            isActive = item.isShared,
-            action = HomeAction.OnPostShareClick(item),
-        ),
-    )
+    val actions = HomeActionItem.actions(item)
     Row(
         modifier = Modifier
             .padding(top = 18.dp)

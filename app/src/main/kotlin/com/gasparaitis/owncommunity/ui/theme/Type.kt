@@ -1,4 +1,4 @@
-package com.gasparaitis.owncommunity.utils.compose.ui.theme
+package com.gasparaitis.owncommunity.ui.theme
 
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font

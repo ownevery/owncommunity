@@ -1,8 +1,7 @@
-package com.gasparaitis.owncommunity.utils.compose.ui
+package com.gasparaitis.owncommunity.ui.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Brush
-import com.gasparaitis.owncommunity.utils.compose.ui.theme.Colors
 
 @Composable
 fun slightDarkGradientBrush(): Brush = Brush.verticalGradient(

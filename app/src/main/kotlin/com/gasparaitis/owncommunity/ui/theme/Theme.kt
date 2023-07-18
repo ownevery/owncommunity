@@ -1,4 +1,4 @@
-package com.gasparaitis.owncommunity.utils.compose.ui.theme
+package com.gasparaitis.owncommunity.ui.theme
 
 import android.app.Activity
 import android.os.Build

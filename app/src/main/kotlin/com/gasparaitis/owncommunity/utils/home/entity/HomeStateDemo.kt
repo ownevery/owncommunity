@@ -1,13 +1,13 @@
 // TODO: REMOVE ME
-package com.gasparaitis.owncommunity.utils.demo
+package com.gasparaitis.owncommunity.utils.home.entity
 
 import com.gasparaitis.owncommunity.R
-import com.gasparaitis.owncommunity.ui.home.HomeItem
-import com.gasparaitis.owncommunity.ui.home.HomeItemType
-import com.gasparaitis.owncommunity.ui.home.HomeStory
-object HomeUiStateDemo {
-    val post1 = HomeItem(
-        type = HomeItemType.TextOnly,
+import java.util.UUID
+
+object HomeStateDemo {
+    val post1 = HomePost.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
+        type = HomePostType.TextOnly,
         profileImage = R.drawable.demo_profile_1,
         authorName = "Jacob Washington",
         postedTimeAgo = "20m ago",
@@ -17,10 +17,11 @@ object HomeUiStateDemo {
         shareCount = 124,
         isBookmarked = false,
         isLiked = true,
-        isShared = true
+        isShared = true,
     )
-    val post2 = HomeItem(
-        type = HomeItemType.Images(images = listOf(R.drawable.demo_story_2, R.drawable.demo_story_3)),
+    val post2 = HomePost.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
+        type = HomePostType.Images(images = listOf(R.drawable.demo_story_2, R.drawable.demo_story_3)),
         profileImage = R.drawable.demo_profile_2,
         authorName = "Kat Williams",
         postedTimeAgo = "1h ago",
@@ -31,8 +32,9 @@ object HomeUiStateDemo {
         isBookmarked = false,
         isShared = true,
     )
-    val post3 = HomeItem(
-        type = HomeItemType.TextOnly,
+    val post3 = HomePost.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
+        type = HomePostType.TextOnly,
         profileImage = R.drawable.demo_profile_3,
         authorName = "Tony Monta",
         postedTimeAgo = "1h ago",
@@ -43,8 +45,9 @@ object HomeUiStateDemo {
         isBookmarked = false,
         isLiked = true,
     )
-    val post4 = HomeItem(
-        type = HomeItemType.Images(images = listOf(R.drawable.demo_story_1)),
+    val post4 = HomePost.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
+        type = HomePostType.Images(images = listOf(R.drawable.demo_story_1)),
         profileImage = R.drawable.demo_profile_4,
         authorName = "Jessica Thompson",
         postedTimeAgo = "2h ago",
@@ -54,24 +57,30 @@ object HomeUiStateDemo {
         shareCount = 0,
         isBookmarked = false,
     )
-    val story1 = HomeStory(
+    val story1 = HomeStory.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
         storyImage = R.drawable.demo_story_1,
         profileImage = R.drawable.demo_profile_1,
         isRead = false,
     )
-    val story2 = HomeStory(
+    val story2 = HomeStory.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
         storyImage = R.drawable.demo_story_2,
         profileImage = R.drawable.demo_profile_2,
         isRead = true,
     )
-    val story3 = HomeStory(
+    val story3 = HomeStory.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
         storyImage = R.drawable.demo_story_3,
         profileImage = R.drawable.demo_profile_3,
         isRead = false,
     )
-    val story4 = HomeStory(
+    val story4 = HomeStory.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
         storyImage = R.drawable.demo_story_4,
         profileImage = R.drawable.demo_profile_4,
         isRead = true,
     )
+    val posts = listOf(post1, post2, post3, post4)
+    val stories = listOf(story1, story2, story3, story4)
 }
