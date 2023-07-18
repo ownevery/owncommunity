@@ -1,8 +1,6 @@
 package com.gasparaitis.owncommunity.utils.home.entity
 
 import androidx.annotation.DrawableRes
-import com.gasparaitis.owncommunity.R
-import java.util.UUID
 
 data class HomePost(
     val id: String,
@@ -20,9 +18,9 @@ data class HomePost(
 ) {
     companion object {
         val EMPTY = HomePost(
-            id = UUID.randomUUID().toString(),
+            id = "",
             type = HomePostType.TextOnly,
-            profileImage = R.drawable.ic_profile,
+            profileImage = 0,
             authorName = "",
             postedTimeAgo = "",
             bodyText = "",
