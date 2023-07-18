@@ -13,11 +13,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.gasparaitis.owncommunity.ui.NavGraphs
 import com.gasparaitis.owncommunity.ui.appCurrentDestinationAsState
 import com.gasparaitis.owncommunity.ui.destinations.CreateScreenDestination
 import com.gasparaitis.owncommunity.ui.startAppDestination
-import com.gasparaitis.owncommunity.utils.compose.ui.theme.Colors
+import com.gasparaitis.owncommunity.ui.theme.Colors
 import com.gasparaitis.owncommunity.utils.navigation.BottomNavigationDestination
 import com.ramcosta.composedestinations.navigation.navigate
 
@@ -37,7 +38,11 @@ fun BottomNavigationBar(
                 selected = currentDestination == destination.direction,
                 onClick = {
                     navController.navigate(destination.direction) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
                         launchSingleTop = true
+                        restoreState = true
                     }
                 },
                 icon = {
