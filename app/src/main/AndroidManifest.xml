@@ -13,7 +13,7 @@
         android:theme="@style/Theme.Owncommunity"
         tools:targetApi="31">
         <activity
-            android:name="com.gasparaitis.owncommunity.ui.main.MainActivity"
+            android:name="com.gasparaitis.owncommunity.presentation.main.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Owncommunity">
             <intent-filter>
