@@ -36,7 +36,7 @@ class HomeViewModel : ViewModel() {
             is HomeAction.OnPostCommentClick -> onPostCommentClick(action.item)
             is HomeAction.OnPostLikeClick -> onPostLikeClick(action.item)
             is HomeAction.OnPostShareClick -> onPostShareClick(action.item)
-            is HomeAction.OnStoryClick -> onStoryClick(action.story)
+            is HomeAction.OnStoryClick -> onStoryClick(action.item)
             HomeAction.OnNotificationIconClick -> onNotificationIconClick()
             is HomeAction.OnPostAuthorClick -> onPostAuthorClick(action.item)
             is HomeAction.OnPostBodyClick -> onPostBodyClick()
