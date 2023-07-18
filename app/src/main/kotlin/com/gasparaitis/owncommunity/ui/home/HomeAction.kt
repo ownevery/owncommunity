@@ -4,7 +4,7 @@ import com.gasparaitis.owncommunity.utils.home.entity.HomePost
 import com.gasparaitis.owncommunity.utils.home.entity.HomeStory
 
 sealed class HomeAction {
-    object OnNotificationIconClick : HomeAction()
+    object OnAlertIconClick : HomeAction()
     data class OnStoryClick(val item: HomeStory) : HomeAction()
     data class OnPostLikeClick(val item: HomePost) : HomeAction()
     data class OnPostBodyClick(val item: HomePost) : HomeAction()

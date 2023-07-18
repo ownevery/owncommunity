@@ -83,8 +83,8 @@ private fun HomeScreenContent(
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         HomeTopRow(
-            isNotificationBadgeEnabled = !state.areAllNotificationsRead,
-            onNotificationIconClick = { onAction(HomeAction.OnNotificationIconClick) }
+            isAlertBadgeEnabled = !state.areAllAlertsRead,
+            onAlertIconClick = { onAction(HomeAction.OnAlertIconClick) }
         )
         Column(
             modifier = Modifier
@@ -107,8 +107,8 @@ private fun HomeScreenContent(
 
 @Composable
 fun HomeTopRow(
-    onNotificationIconClick: () -> Unit,
-    isNotificationBadgeEnabled: Boolean
+    onAlertIconClick: () -> Unit,
+    isAlertBadgeEnabled: Boolean
 ) {
     Row(
         modifier = Modifier
@@ -121,9 +121,9 @@ fun HomeTopRow(
         HomeTopRowTitle(
             title = stringResource(id = R.string.home_title),
         )
-        HomeTopRowNotificationIconButton(
-            isBadgeEnabled = isNotificationBadgeEnabled,
-            onClick = onNotificationIconClick,
+        HomeTopRowAlertIconButton(
+            isBadgeEnabled = isAlertBadgeEnabled,
+            onClick = onAlertIconClick,
         )
     }
 }
@@ -139,7 +139,7 @@ private fun HomeTopRowTitle(
 }
 
 @Composable
-private fun HomeTopRowNotificationIconButton(
+private fun HomeTopRowAlertIconButton(
     onClick: () -> Unit,
     isBadgeEnabled: Boolean
 ) {
@@ -157,9 +157,9 @@ private fun HomeTopRowNotificationIconButton(
                 .size(10.dp)
                 .zIndex(1f)
                 .align(Alignment.TopEnd),
-            painter = painterResource(id = R.drawable.ic_notification_badge),
+            painter = painterResource(id = R.drawable.ic_alert_badge),
             tint = Color.Unspecified,
-            contentDescription = "Notification badge",
+            contentDescription = "Alert badge",
         )
     }
 }

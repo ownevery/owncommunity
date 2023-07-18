@@ -37,7 +37,7 @@ class HomeViewModel : ViewModel() {
             is HomeAction.OnPostLikeClick -> onPostLikeClick(action.item)
             is HomeAction.OnPostShareClick -> onPostShareClick(action.item)
             is HomeAction.OnStoryClick -> onStoryClick(action.item)
-            HomeAction.OnNotificationIconClick -> onNotificationIconClick()
+            HomeAction.OnAlertIconClick -> onAlertIconClick()
             is HomeAction.OnPostAuthorClick -> onPostAuthorClick(action.item)
             is HomeAction.OnPostBodyClick -> onPostBodyClick()
         }
@@ -55,9 +55,9 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    private fun onNotificationIconClick() {
+    private fun onAlertIconClick() {
         viewModelScope.launch {
-            _navEvent.emit(HomeNavEvent.OpenNotifications)
+            _navEvent.emit(HomeNavEvent.OpenAlerts)
         }
     }
 

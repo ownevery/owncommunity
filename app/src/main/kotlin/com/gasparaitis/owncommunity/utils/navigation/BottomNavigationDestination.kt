@@ -3,9 +3,9 @@ package com.gasparaitis.owncommunity.utils.navigation
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.gasparaitis.owncommunity.R
+import com.gasparaitis.owncommunity.ui.destinations.AlertsScreenDestination
 import com.gasparaitis.owncommunity.ui.destinations.CreateScreenDestination
 import com.gasparaitis.owncommunity.ui.destinations.HomeScreenDestination
-import com.gasparaitis.owncommunity.ui.destinations.NotificationsScreenDestination
 import com.gasparaitis.owncommunity.ui.destinations.ProfileScreenDestination
 import com.gasparaitis.owncommunity.ui.destinations.SearchScreenDestination
 import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
@@ -25,7 +25,7 @@ enum class BottomNavigationDestination(
     Create(CreateScreenDestination, R.drawable.ic_create, R.string.bottom_navigation_create),
 
     // #4
-    Notifications(NotificationsScreenDestination, R.drawable.ic_alert, R.string.bottom_navigation_notifications),
+    Alerts(AlertsScreenDestination, R.drawable.ic_alert, R.string.bottom_navigation_alerts),
 
     // #5
     Profile(ProfileScreenDestination, R.drawable.ic_profile, R.string.bottom_navigation_profile),

@@ -1,4 +1,4 @@
-package com.gasparaitis.owncommunity.ui.notifications
+package com.gasparaitis.owncommunity.ui.alerts
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,8 +9,8 @@ import com.ramcosta.composedestinations.annotation.Destination
 
 @Destination
 @Composable
-fun NotificationsScreen() {
+fun AlertsScreen() {
     Column(modifier = Modifier.fillMaxSize()) {
-        Text("Notifications Screen")
+        Text("Alerts Screen")
     }
 }
