@@ -1,7 +1,9 @@
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.com.android.application)
-    alias(libs.plugins.kotlin)
+    kotlin("android")
+    kotlin("kapt")
+    alias(libs.plugins.hilt)
     alias(libs.plugins.gms)
     alias(libs.plugins.ksp)
 }
@@ -44,11 +46,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 }
-
 dependencies {
     // Core libraries
     implementation(libs.core.ktx)
@@ -64,6 +62,13 @@ dependencies {
     // Compose Destinations
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.ksp)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.android.testing)
+    implementation(libs.hilt.ext.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+    "kapt"(libs.hilt.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)

@@ -1,9 +1,21 @@
-// TODO: REMOVE ME
-package com.gasparaitis.owncommunity.domain.home.model
+package com.gasparaitis.owncommunity.domain.home.usecase
 
 import com.gasparaitis.owncommunity.R
+import com.gasparaitis.owncommunity.domain.home.model.HomePost
+import com.gasparaitis.owncommunity.domain.home.model.HomePostType
+import com.gasparaitis.owncommunity.domain.home.model.HomeStory
+import com.gasparaitis.owncommunity.presentation.home.HomeState
 import java.util.UUID
 
+class HomeUseCase {
+    fun getState(): HomeState = HomeState.EMPTY.copy(
+        areAllAlertsRead = false,
+        posts = HomeStateDemo.posts,
+        stories = HomeStateDemo.stories,
+    )
+}
+
+// TODO: REMOVE ME
 object HomeStateDemo {
     val post1 = HomePost.EMPTY.copy(
         id = UUID.randomUUID().toString(),

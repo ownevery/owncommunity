@@ -3,8 +3,11 @@ package com.gasparaitis.owncommunity.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gasparaitis.owncommunity.domain.home.model.HomePost
-import com.gasparaitis.owncommunity.domain.home.model.HomeStateDemo
 import com.gasparaitis.owncommunity.domain.home.model.HomeStory
+import com.gasparaitis.owncommunity.domain.home.usecase.HomeStateDemo
+import com.gasparaitis.owncommunity.domain.home.usecase.HomeUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +15,10 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class HomeViewModel : ViewModel() {
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val homeUseCase: HomeUseCase,
+) : ViewModel() {
     private val _state: MutableStateFlow<HomeState> = MutableStateFlow(HomeState.EMPTY)
     val state: StateFlow<HomeState> = _state.asStateFlow()
 
@@ -40,6 +46,13 @@ class HomeViewModel : ViewModel() {
             HomeAction.OnAlertIconClick -> onAlertIconClick()
             is HomeAction.OnPostAuthorClick -> onPostAuthorClick(action.item)
             is HomeAction.OnPostBodyClick -> onPostBodyClick()
+            HomeAction.OnHomeIconRepeatClick -> onHomeIconRepeatClick()
+        }
+    }
+
+    private fun onHomeIconRepeatClick() {
+        viewModelScope.launch {
+            _navEvent.emit(HomeNavEvent.ScrollUp)
         }
     }
 

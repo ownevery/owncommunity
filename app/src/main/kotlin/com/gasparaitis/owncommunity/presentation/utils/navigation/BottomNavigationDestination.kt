@@ -5,18 +5,18 @@ import androidx.annotation.StringRes
 import com.gasparaitis.owncommunity.R
 import com.gasparaitis.owncommunity.presentation.destinations.AlertsScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.CreateScreenDestination
+import com.gasparaitis.owncommunity.presentation.destinations.Destination
 import com.gasparaitis.owncommunity.presentation.destinations.HomeScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.SearchScreenDestination
-import com.ramcosta.composedestinations.spec.Direction
 
 enum class BottomNavigationDestination(
-    val direction: Direction,
+    val direction: Destination,
     @DrawableRes val icon: Int,
     @StringRes val label: Int,
 ) {
     // #1
-    Home(HomeScreenDestination(shouldReload = false), R.drawable.ic_feed, R.string.bottom_navigation_home),
+    Home(HomeScreenDestination, R.drawable.ic_feed, R.string.bottom_navigation_home),
 
     // #2
     Search(SearchScreenDestination, R.drawable.ic_search, R.string.bottom_navigation_search),

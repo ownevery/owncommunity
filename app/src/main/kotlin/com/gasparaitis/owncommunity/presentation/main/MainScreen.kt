@@ -7,9 +7,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.gasparaitis.owncommunity.presentation.NavGraphs
-import com.gasparaitis.owncommunity.presentation.appCurrentDestinationAsState
 import com.gasparaitis.owncommunity.presentation.destinations.AlertsScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.CreateScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.Destination
@@ -18,15 +19,17 @@ import com.gasparaitis.owncommunity.presentation.destinations.PostScreenDestinat
 import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.SearchScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.StoryScreenDestination
-import com.gasparaitis.owncommunity.presentation.startAppDestination
+import com.gasparaitis.owncommunity.presentation.home.HomeAction
+import com.gasparaitis.owncommunity.presentation.home.HomeViewModel
+import com.gasparaitis.owncommunity.presentation.utils.extensions.componentActivity
 import com.gasparaitis.owncommunity.presentation.utils.theme.AppTheme
 import com.ramcosta.composedestinations.DestinationsNavHost
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    homeViewModel: HomeViewModel = hiltViewModel(LocalContext.current.componentActivity),
+) {
     val navController = rememberNavController()
-    val currentDestination = navController.appCurrentDestinationAsState().value
-        ?: NavGraphs.root.startAppDestination
     AppTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -35,7 +38,10 @@ fun MainScreen() {
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
                 bottomBar = {
-                    BottomNavigationBar(navController = navController)
+                    BottomNavigationBar(
+                        navController = navController,
+                        onHomeDestinationRepeatClick = { homeViewModel.onAction(HomeAction.OnHomeIconRepeatClick) }
+                    )
                 },
             ) { paddingValues ->
                 DestinationsNavHost(

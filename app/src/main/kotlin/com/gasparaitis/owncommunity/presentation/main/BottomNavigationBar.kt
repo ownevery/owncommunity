@@ -1,5 +1,6 @@
 package com.gasparaitis.owncommunity.presentation.main
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -14,34 +15,38 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.gasparaitis.owncommunity.presentation.NavGraphs
-import com.gasparaitis.owncommunity.presentation.appCurrentDestinationAsState
 import com.gasparaitis.owncommunity.presentation.destinations.CreateScreenDestination
-import com.gasparaitis.owncommunity.presentation.startAppDestination
+import com.gasparaitis.owncommunity.presentation.destinations.HomeScreenDestination
 import com.gasparaitis.owncommunity.presentation.utils.navigation.BottomNavigationDestination
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
-import com.ramcosta.composedestinations.navigation.navigate
+import com.ramcosta.composedestinations.utils.currentDestinationAsState
 
 @Composable
 fun BottomNavigationBar(
     navController: NavController,
+    onHomeDestinationRepeatClick: () -> Unit,
 ) {
-    val currentDestination = navController.appCurrentDestinationAsState().value
-        ?: NavGraphs.root.startAppDestination
-
+    val currentDestination = navController.currentDestinationAsState()
     NavigationBar(
         modifier = Modifier.height(64.dp),
         containerColor = Colors.PureBlack,
     ) {
         BottomNavigationDestination.values().forEach { destination ->
             NavigationBarItem(
-                selected = currentDestination == destination.direction,
+                selected = currentDestination.value == destination.direction,
                 onClick = {
-                    navController.navigate(destination.direction) {
+                    if (destination.direction == HomeScreenDestination &&
+                        currentDestination.value == HomeScreenDestination
+                    ) {
+                        Log.d("justas", "BottomNavigationBar: scrollUp()")
+                        onHomeDestinationRepeatClick()
+                        return@NavigationBarItem
+                    }
+                    navController.navigate(destination.direction.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
-                        launchSingleTop = false
+                        launchSingleTop = true
                         restoreState = true
                     }
                 },

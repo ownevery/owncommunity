@@ -5,6 +5,7 @@ import com.gasparaitis.owncommunity.domain.home.model.HomeStory
 
 sealed class HomeAction {
     object OnAlertIconClick : HomeAction()
+    object OnHomeIconRepeatClick : HomeAction()
     data class OnStoryClick(val item: HomeStory) : HomeAction()
     data class OnPostLikeClick(val item: HomePost) : HomeAction()
     data class OnPostBodyClick(val item: HomePost) : HomeAction()

@@ -1,6 +1,5 @@
 package com.gasparaitis.owncommunity.presentation.home
 
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -18,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
@@ -31,14 +31,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,13 +45,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.gasparaitis.owncommunity.R
 import com.gasparaitis.owncommunity.domain.home.model.HomeActionItem
 import com.gasparaitis.owncommunity.domain.home.model.HomePost
 import com.gasparaitis.owncommunity.domain.home.model.HomePostType
-import com.gasparaitis.owncommunity.domain.home.model.HomeStateDemo.posts
 import com.gasparaitis.owncommunity.domain.home.model.HomeStory
+import com.gasparaitis.owncommunity.presentation.destinations.HomeScreenDestination
+import com.gasparaitis.owncommunity.presentation.utils.extensions.componentActivity
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
 import com.gasparaitis.owncommunity.presentation.utils.theme.TextStyles
@@ -60,36 +60,40 @@ import com.gasparaitis.owncommunity.presentation.utils.theme.defaultGradientBrus
 import com.gasparaitis.owncommunity.presentation.utils.theme.slightDarkGradientBrush
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.popUpTo
 
 @Destination(start = true)
 @Composable
 fun HomeScreen(
-    shouldReload: Boolean = false,
     navigator: DestinationsNavigator,
-    viewModel: HomeViewModel = viewModel(),
+    viewModel: HomeViewModel = hiltViewModel(LocalContext.current.componentActivity),
 ) {
-    Log.d("justas", "HomeScreen: shouldReload = $shouldReload")
     val state = viewModel.state.collectAsState()
+    val lazyListState = rememberLazyListState()
     HomeContent(
-        shouldReload = shouldReload,
         state = state.value,
+        lazyListState = lazyListState,
         onAction = viewModel::onAction,
     )
     LaunchedEffect(Unit) {
         viewModel.navEvent.collect {
-            navigator.navigate(it.destination)
+            if (it is HomeNavEvent.ScrollUp && lazyListState.canScrollBackward) {
+                lazyListState.animateScrollToItem(0)
+                return@collect
+            }
+            navigator.navigate(it.destination) {
+                popUpTo(HomeScreenDestination) { saveState = true }
+            }
         }
     }
 }
 
 @Composable
 private fun HomeContent(
-    shouldReload: Boolean,
     state: HomeState,
+    lazyListState: LazyListState,
     onAction: (HomeAction) -> Unit,
 ) {
-    val reloadState = remember { mutableStateOf(shouldReload) }
-    val lazyListState = rememberLazyListState()
     Column(modifier = Modifier.fillMaxSize()) {
         TopRow(
             isAlertBadgeEnabled = !state.areAllAlertsRead,
@@ -106,20 +110,14 @@ private fun HomeContent(
                 )
             }
             items(
-                count = posts.size,
-                key = { posts[it].id },
+                count = state.posts.size,
+                key = { state.posts[it].id },
             ) { index ->
                 PostView(
                     item = state.posts[index],
                     onAction = onAction,
                 )
             }
-        }
-    }
-    LaunchedEffect(key1 = reloadState.value) {
-        if (reloadState.value) {
-            lazyListState.scrollToItem(0)
-            reloadState.value = false
         }
     }
 }
