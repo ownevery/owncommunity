@@ -2,8 +2,10 @@ package com.gasparaitis.owncommunity.domain.alerts.model
 
 import androidx.annotation.DrawableRes
 import com.gasparaitis.owncommunity.R
+import java.util.UUID
 
 data class AlertItem(
+    val id: String,
     val section: AlertItemSection,
     val type: AlertItemType,
     val title: String,
@@ -12,6 +14,7 @@ data class AlertItem(
 ) {
     companion object {
         val EMPTY = AlertItem(
+            id = UUID.randomUUID().toString(),
             section = AlertItemSection.TODAY,
             type = AlertItemType.LIKE,
             title = "",

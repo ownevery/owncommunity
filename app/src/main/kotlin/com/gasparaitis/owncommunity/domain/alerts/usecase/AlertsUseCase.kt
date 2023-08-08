@@ -4,6 +4,7 @@ import com.gasparaitis.owncommunity.domain.alerts.model.AlertItem
 import com.gasparaitis.owncommunity.domain.alerts.model.AlertItemSection
 import com.gasparaitis.owncommunity.domain.alerts.model.AlertItemType
 import com.gasparaitis.owncommunity.presentation.alerts.AlertsState
+import java.util.UUID
 
 class AlertsUseCase {
     fun getState(): AlertsState = AlertsState.EMPTY.copy(
@@ -14,6 +15,7 @@ class AlertsUseCase {
 // TODO: REMOVE ME
 object AlertsStateDemo {
     val alert1 = AlertItem.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
         isRead = false,
         section = AlertItemSection.TODAY,
         type = AlertItemType.LIKE,
@@ -21,6 +23,7 @@ object AlertsStateDemo {
         date = "10m ago"
     )
     val alert2 = AlertItem.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
         isRead = false,
         section = AlertItemSection.TODAY,
         type = AlertItemType.LIKE,
@@ -28,6 +31,7 @@ object AlertsStateDemo {
         date = "30m ago"
     )
     val alert3 = AlertItem.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
         isRead = true,
         section = AlertItemSection.LAST_30_DAYS,
         type = AlertItemType.COMMENT,
@@ -35,6 +39,7 @@ object AlertsStateDemo {
         date = "1d ago",
     )
     val alert4 = AlertItem.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
         isRead = false,
         section = AlertItemSection.OLDER,
         type = AlertItemType.BIRTHDAY,
@@ -42,6 +47,7 @@ object AlertsStateDemo {
         date = "155d ago",
     )
     val alert5 = AlertItem.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
         isRead = true,
         section = AlertItemSection.OLDER,
         type = AlertItemType.MENTION,
@@ -49,6 +55,7 @@ object AlertsStateDemo {
         date = "156d ago",
     )
     val alert6 = AlertItem.EMPTY.copy(
+        id = UUID.randomUUID().toString(),
         isRead = false,
         section = AlertItemSection.OLDER,
         type = AlertItemType.MENTION,

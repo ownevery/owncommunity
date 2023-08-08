@@ -46,7 +46,7 @@ class AlertsViewModel @Inject constructor(
         val items = state.value.alertItems.toMutableMap().apply {
             compute(item.section) { _, list ->
                 list?.toMutableList()?.map { listItem ->
-                    if (listItem.title == item.title) listItem.copy(isRead = true) else listItem
+                    if (listItem.id == item.id) listItem.copy(isRead = true) else listItem
                 }
             }
         }
