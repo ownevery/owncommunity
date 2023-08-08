@@ -10,6 +10,7 @@ build-sdk-target = "33"
 activity-compose = "1.7.2"
 agp = "8.1.0-rc01"
 androidx-test-ext-junit = "1.1.5"
+androidxHiltNavigationCompose = "1.0.0"
 compose-bom = "2023.06.01"
 compose-compiler = "1.4.8"
 compose-destinations-core = "1.9.42-beta"
@@ -17,6 +18,8 @@ compose-destinations-ksp = "1.9.42-beta"
 core-ktx = "1.10.1"
 espresso-core = "3.5.1"
 gms = "4.3.15"
+hilt = "2.45"
+hiltExt = "1.0.0"
 junit = "4.13.2"
 kotlin = "1.8.22"
 ksp = "1.8.22-1.0.11"
@@ -24,6 +27,12 @@ lifecycle-runtime-ktx = "2.6.1"
 material = "1.4.3"
 
 [libraries]
+androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigationCompose" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+hilt-ext-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltExt" }
+hilt-ext-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltExt" }
 compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "compose-compiler" }
 compose-destinations-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "compose-destinations-core" }
 compose-destinations-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "compose-destinations-ksp" }
@@ -47,6 +56,7 @@ material3 = { group = "androidx.compose.material3", name = "material3" }
 com-android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 gms = { id = "com.google.gms.google-services", version.ref = "gms" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 [bundles]
