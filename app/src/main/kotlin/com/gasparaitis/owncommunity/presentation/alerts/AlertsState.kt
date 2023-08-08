@@ -1,37 +1,14 @@
 package com.gasparaitis.owncommunity.presentation.alerts
 
-import androidx.annotation.DrawableRes
+import com.gasparaitis.owncommunity.domain.alerts.model.AlertItem
+import com.gasparaitis.owncommunity.domain.alerts.model.AlertItemSection
 
 data class AlertsState(
-    val areAllAlertsRead: Boolean,
-    val alertItems: List<AlertItem>,
+    val alertItems: Map<AlertItemSection, List<AlertItem>>,
 ) {
     companion object {
         val EMPTY = AlertsState(
-            areAllAlertsRead = false,
-            alertItems = listOf(),
+            alertItems = mapOf(),
         )
     }
-}
-
-data class AlertItem(
-    val section: AlertItemSection,
-    @DrawableRes val icon: Int,
-    val title: String,
-    val date: String,
-) {
-    companion object {
-        val EMPTY = AlertItem(
-            section = AlertItemSection.TODAY,
-            icon = 0,
-            title = "",
-            date = ""
-        )
-    }
-}
-
-enum class AlertItemSection {
-    TODAY,
-    LAST_30_DAYS,
-    OLDER,
 }

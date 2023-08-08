@@ -8,4 +8,9 @@
     <string name="bottom_navigation_alerts">Alerts</string>
     <string name="bottom_navigation_profile">Profile</string>
     <string name="home_title">Good Morning, Justas.</string>
+    <string name="alerts_screen_title">Alerts</string>
+    <string name="alerts_screen_mark_all_as_read">Mark all as read</string>
+    <string name="alert_item_section_today">Today</string>
+    <string name="alert_item_section_last_30_days">Last 30 days</string>
+    <string name="alert_item_section_older">Older</string>
 </resources>
