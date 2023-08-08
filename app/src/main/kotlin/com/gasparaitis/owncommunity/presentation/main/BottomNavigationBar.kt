@@ -1,6 +1,5 @@
 package com.gasparaitis.owncommunity.presentation.main
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -38,7 +37,6 @@ fun BottomNavigationBar(
                     if (destination.direction == HomeScreenDestination &&
                         currentDestination.value == HomeScreenDestination
                     ) {
-                        Log.d("justas", "BottomNavigationBar: scrollUp()")
                         onHomeDestinationRepeatClick()
                         return@NavigationBarItem
                     }

@@ -1,6 +1,5 @@
 package com.gasparaitis.owncommunity.presentation.story
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -15,7 +14,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 fun StoryScreen(
     navController: NavController = rememberNavController(),
 ) {
-    Log.d("justas", "StoryScreen: mainRoute = ${ navController.currentBackStackEntry?.destination?.parent?.route}")
     Column(modifier = Modifier.fillMaxSize()) {
         Text("Story Screen")
     }
