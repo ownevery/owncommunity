@@ -1,6 +1,5 @@
 package com.gasparaitis.owncommunity.presentation.alerts
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gasparaitis.owncommunity.domain.alerts.model.AlertItem
@@ -43,14 +42,15 @@ class AlertsViewModel @Inject constructor(
     private fun onAlertItemClick(
         item: AlertItem,
     ) {
-        val items = state.value.alertItems.toMutableMap().apply {
-            compute(item.section) { _, list ->
-                list?.toMutableList()?.map { listItem ->
-                    if (listItem.id == item.id) listItem.copy(isRead = true) else listItem
+        _state.value = state.value.copy(
+            alertItems = state.value.alertItems.toMutableMap().apply {
+                compute(item.section) { _, list ->
+                    list?.toMutableList()?.map { listItem ->
+                        if (listItem.id == item.id) listItem.copy(isRead = true) else listItem
+                    }
                 }
             }
-        }
-        _state.value = state.value.copy(alertItems = items)
+        )
         viewModelScope.launch {
             _navEvent.emit(
                 if (item.type == AlertItemType.BIRTHDAY) AlertsNavEvent.OpenProfile else AlertsNavEvent.OpenPost
@@ -59,16 +59,14 @@ class AlertsViewModel @Inject constructor(
     }
 
     private fun onMarkAllAsReadClick() {
-        val items = state.value.alertItems.toMutableMap().apply {
-            forEach {
-                compute(it.key) {_, list ->
-                    list?.toMutableList()?.map { listItem -> listItem.copy(isRead = true) }
-                }
-            }
-        }
         _state.value = state.value.copy(
-            alertItems = items,
+            alertItems = state.value.alertItems.toMutableMap().apply {
+                forEach { (section, _) ->
+                    compute(section) {_, list ->
+                        list?.toMutableList()?.map { listItem -> listItem.copy(isRead = true) }
+                    }
+                }
+            },
         )
-        Log.d("justas", "onMarkAllAsReadClick: state items = ${state.value.alertItems}")
     }
 }
