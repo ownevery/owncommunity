@@ -2,10 +2,10 @@ package com.gasparaitis.owncommunity.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gasparaitis.owncommunity.domain.home.model.HomePost
-import com.gasparaitis.owncommunity.domain.home.model.HomeStory
-import com.gasparaitis.owncommunity.domain.home.usecase.HomeStateDemo
 import com.gasparaitis.owncommunity.domain.home.usecase.HomeUseCase
+import com.gasparaitis.owncommunity.domain.shared.post.model.Post
+import com.gasparaitis.owncommunity.domain.shared.story.model.Story
+import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostAction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -30,23 +30,24 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun onCreated() {
-        _state.value = _state.value.copy(
-            posts = HomeStateDemo.posts,
-            stories = HomeStateDemo.stories,
-        )
+        _state.value = homeUseCase.getState()
     }
 
     fun onAction(action: HomeAction) {
         when (action) {
-            is HomeAction.OnPostBookmarkClick -> onPostBookmarkClick(action.item)
-            is HomeAction.OnPostCommentClick -> onPostCommentClick(action.item)
-            is HomeAction.OnPostLikeClick -> onPostLikeClick(action.item)
-            is HomeAction.OnPostShareClick -> onPostShareClick(action.item)
             is HomeAction.OnStoryClick -> onStoryClick(action.item)
             HomeAction.OnAlertIconClick -> onAlertIconClick()
-            is HomeAction.OnPostAuthorClick -> onPostAuthorClick(action.item)
-            is HomeAction.OnPostBodyClick -> onPostBodyClick()
             HomeAction.OnHomeIconRepeatClick -> onHomeIconRepeatClick()
+            is HomeAction.OnPostAction -> {
+                when (action.postAction) {
+                    is PostAction.OnAuthorClick -> onPostAuthorClick(action.postAction.item)
+                    is PostAction.OnBodyClick -> onPostBodyClick()
+                    is PostAction.OnBookmarkClick -> onPostBookmarkClick(action.postAction.item)
+                    is PostAction.OnCommentClick -> onPostCommentClick(action.postAction.item)
+                    is PostAction.OnLikeClick -> onPostLikeClick(action.postAction.item)
+                    is PostAction.OnShareClick -> onPostShareClick(action.postAction.item)
+                }
+            }
         }
     }
 
@@ -56,25 +57,13 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun onPostBodyClick() {
-        viewModelScope.launch {
-            _navEvent.emit(HomeNavEvent.OpenPost)
-        }
-    }
-
-    private fun onPostAuthorClick(item: HomePost) {
-        viewModelScope.launch {
-            _navEvent.emit(HomeNavEvent.OpenPostAuthorProfile)
-        }
-    }
-
     private fun onAlertIconClick() {
         viewModelScope.launch {
             _navEvent.emit(HomeNavEvent.OpenAlerts)
         }
     }
 
-    private fun onStoryClick(story: HomeStory) {
+    private fun onStoryClick(story: Story) {
         viewModelScope.launch {
             _navEvent.emit(HomeNavEvent.OpenStory)
             _state.value = _state.value.copy(
@@ -85,47 +74,59 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun onPostLikeClick(homePost: HomePost) =
-        updateStateByItemId(
-            homePost = homePost.copy(
-                isLiked = homePost.isLiked.not(),
-                likeCount = if (homePost.isLiked) {
-                    homePost.likeCount.dec()
-                } else {
-                    homePost.likeCount.inc()
-                },
-            ),
-        )
-
-    private fun onPostCommentClick(homePost: HomePost) {
+    private fun onPostBodyClick() {
         viewModelScope.launch {
             _navEvent.emit(HomeNavEvent.OpenPost)
         }
     }
 
-    private fun onPostShareClick(homePost: HomePost) =
+    private fun onPostAuthorClick(item: Post) {
+        viewModelScope.launch {
+            _navEvent.emit(HomeNavEvent.OpenPostAuthorProfile)
+        }
+    }
+
+    private fun onPostLikeClick(post: Post) =
         updateStateByItemId(
-            homePost = homePost.copy(
-                isShared = homePost.isShared.not(),
-                shareCount = if (homePost.isShared) {
-                    homePost.shareCount.dec()
+            post = post.copy(
+                isLiked = post.isLiked.not(),
+                likeCount = if (post.isLiked) {
+                    post.likeCount.dec()
                 } else {
-                    homePost.shareCount.inc()
+                    post.likeCount.inc()
                 },
             ),
         )
 
-    private fun onPostBookmarkClick(homePost: HomePost) =
+    private fun onPostCommentClick(post: Post) {
+        viewModelScope.launch {
+            _navEvent.emit(HomeNavEvent.OpenPost)
+        }
+    }
+
+    private fun onPostShareClick(post: Post) =
         updateStateByItemId(
-            homePost = homePost.copy(
-                isBookmarked = homePost.isBookmarked.not(),
+            post = post.copy(
+                isShared = post.isShared.not(),
+                shareCount = if (post.isShared) {
+                    post.shareCount.dec()
+                } else {
+                    post.shareCount.inc()
+                },
             ),
         )
 
-    private fun updateStateByItemId(homePost: HomePost) {
+    private fun onPostBookmarkClick(post: Post) =
+        updateStateByItemId(
+            post = post.copy(
+                isBookmarked = post.isBookmarked.not(),
+            ),
+        )
+
+    private fun updateStateByItemId(post: Post) {
         _state.value = _state.value.copy(
             posts = _state.value.posts.map { item ->
-                if (item.id == homePost.id) homePost else item
+                if (item.id == post.id) post else item
             },
         )
     }

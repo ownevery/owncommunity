@@ -1,28 +1,28 @@
-package com.gasparaitis.owncommunity.domain.home.model
+package com.gasparaitis.owncommunity.domain.shared.post.model
 
 import androidx.annotation.DrawableRes
 
-data class HomePost(
+data class Post(
     val id: String,
-    val type: HomePostType,
+    val type: PostType,
     @DrawableRes val profileImage: Int,
     val authorName: String,
-    val postedTimeAgo: String,
+    val postedAtTimestamp: Long,
     val bodyText: String,
-    val likeCount: Int,
-    val commentCount: Int,
-    val shareCount: Int,
+    val likeCount: Long,
+    val commentCount: Long,
+    val shareCount: Long,
     val isLiked: Boolean,
     val isShared: Boolean,
     val isBookmarked: Boolean,
 ) {
     companion object {
-        val EMPTY = HomePost(
+        val EMPTY = Post(
             id = "",
-            type = HomePostType.TextOnly,
+            type = PostType.TextOnly,
             profileImage = 0,
             authorName = "",
-            postedTimeAgo = "",
+            postedAtTimestamp = 0,
             bodyText = "",
             likeCount = 0,
             commentCount = 0,
@@ -34,7 +34,7 @@ data class HomePost(
     }
 }
 
-sealed class HomePostType {
-    object TextOnly : HomePostType()
-    class Images(val images: List<Int>) : HomePostType()
+sealed class PostType {
+    object TextOnly : PostType()
+    class Images(val images: List<Int>) : PostType()
 }

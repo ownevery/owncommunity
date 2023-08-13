@@ -16,6 +16,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.gasparaitis.owncommunity.presentation.destinations.CreateScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.HomeScreenDestination
+import com.gasparaitis.owncommunity.presentation.destinations.SearchScreenDestination
 import com.gasparaitis.owncommunity.presentation.utils.navigation.BottomNavigationDestination
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
@@ -24,6 +25,7 @@ import com.ramcosta.composedestinations.utils.currentDestinationAsState
 fun BottomNavigationBar(
     navController: NavController,
     onHomeDestinationRepeatClick: () -> Unit,
+    onSearchDestinationRepeatClick: () -> Unit,
 ) {
     val currentDestination = navController.currentDestinationAsState()
     NavigationBar(
@@ -38,6 +40,10 @@ fun BottomNavigationBar(
                         currentDestination.value == HomeScreenDestination
                     ) {
                         onHomeDestinationRepeatClick()
+                        return@NavigationBarItem
+                    } else if (destination.direction == SearchScreenDestination &&
+                        currentDestination.value == SearchScreenDestination) {
+                        onSearchDestinationRepeatClick()
                         return@NavigationBarItem
                     }
                     navController.navigate(destination.direction.route) {
