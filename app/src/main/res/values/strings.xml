@@ -13,4 +13,12 @@
     <string name="alert_item_section_today">Today</string>
     <string name="alert_item_section_last_30_days">Last 30 days</string>
     <string name="alert_item_section_older">Older</string>
+    <string name="search_search_bar_placeholder">Search for people, posts, tags...</string>
+    <string name="tab_title_trending">Trending</string>
+    <string name="tab_title_latest">Latest</string>
+    <string name="tab_title_people">People</string>
+    <string name="search_follower">follower</string>
+    <string name="search_follower_plural_suffix">s</string>
+    <string name="follow_button_follow">Follow</string>
+    <string name="follow_button_following">Following</string>
 </resources>

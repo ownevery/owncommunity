@@ -9,7 +9,7 @@ data class AlertItem(
     val section: AlertItemSection,
     val type: AlertItemType,
     val title: String,
-    val date: String,
+    val timestamp: Long,
     val isRead: Boolean,
 ) {
     companion object {
@@ -18,7 +18,7 @@ data class AlertItem(
             section = AlertItemSection.TODAY,
             type = AlertItemType.LIKE,
             title = "",
-            date = "",
+            timestamp = 0L,
             isRead = false,
         )
     }

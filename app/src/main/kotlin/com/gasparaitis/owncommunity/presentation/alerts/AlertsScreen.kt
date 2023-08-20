@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gasparaitis.owncommunity.R
 import com.gasparaitis.owncommunity.domain.alerts.usecase.AlertsUseCase
+import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableTimeAgo
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
 import com.gasparaitis.owncommunity.presentation.utils.theme.TextStyles
@@ -92,7 +93,7 @@ private fun AlertsScreenContent(
                         isRead = items[index].isRead,
                         imagePainter = painterResource(items[index].type.icon),
                         title = items[index].title,
-                        date = items[index].date,
+                        date = items[index].timestamp.humanReadableTimeAgo,
                     )
                 }
             }

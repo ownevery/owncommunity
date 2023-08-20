@@ -48,7 +48,6 @@ android {
     }
 }
 dependencies {
-    // Core libraries
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)
@@ -59,16 +58,16 @@ dependencies {
     implementation(libs.material)
     implementation(libs.material3)
 
-    // Compose Destinations
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.ksp)
 
-    // Hilt
     implementation(libs.hilt.android)
     implementation(libs.hilt.android.testing)
     implementation(libs.hilt.ext.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     "kapt"(libs.hilt.compiler)
+
+    implementation(libs.kotlinx.datetime)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)

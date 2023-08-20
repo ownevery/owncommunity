@@ -21,6 +21,8 @@ import com.gasparaitis.owncommunity.presentation.destinations.SearchScreenDestin
 import com.gasparaitis.owncommunity.presentation.destinations.StoryScreenDestination
 import com.gasparaitis.owncommunity.presentation.home.HomeAction
 import com.gasparaitis.owncommunity.presentation.home.HomeViewModel
+import com.gasparaitis.owncommunity.presentation.search.SearchAction
+import com.gasparaitis.owncommunity.presentation.search.SearchViewModel
 import com.gasparaitis.owncommunity.presentation.utils.extensions.componentActivity
 import com.gasparaitis.owncommunity.presentation.utils.theme.AppTheme
 import com.ramcosta.composedestinations.DestinationsNavHost
@@ -28,6 +30,7 @@ import com.ramcosta.composedestinations.DestinationsNavHost
 @Composable
 fun MainScreen(
     homeViewModel: HomeViewModel = hiltViewModel(LocalContext.current.componentActivity),
+    searchViewModel: SearchViewModel = hiltViewModel(LocalContext.current.componentActivity),
 ) {
     val navController = rememberNavController()
     AppTheme {
@@ -40,7 +43,8 @@ fun MainScreen(
                 bottomBar = {
                     BottomNavigationBar(
                         navController = navController,
-                        onHomeDestinationRepeatClick = { homeViewModel.onAction(HomeAction.OnHomeIconRepeatClick) }
+                        onHomeDestinationRepeatClick = { homeViewModel.onAction(HomeAction.OnHomeIconRepeatClick) },
+                        onSearchDestinationRepeatClick = { searchViewModel.onAction(SearchAction.OnSearchIconRepeatClick) },
                     )
                 },
             ) { paddingValues ->
