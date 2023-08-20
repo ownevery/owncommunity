@@ -9,6 +9,7 @@ sealed class SearchNavEvent(
     val destination: DirectionDestination,
 ) {
     object OpenPostAuthorProfile : SearchNavEvent(destination = ProfileScreenDestination)
+    object OpenProfile : SearchNavEvent(destination = ProfileScreenDestination)
     object OpenPost : SearchNavEvent(destination = PostScreenDestination)
     object ScrollUp : SearchNavEvent(destination = HomeScreenDestination)
 }

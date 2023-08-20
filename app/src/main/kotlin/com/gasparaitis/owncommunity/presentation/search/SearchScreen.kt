@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -40,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -97,11 +99,14 @@ fun SearchScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SearchContent(
     state: SearchState,
     onAction: (SearchAction) -> Unit,
 ) {
+    val pagerState = rememberPagerState(state.selectedTabIndex)
+    val scope = rememberCoroutineScope()
     val tabs = listOf(
         stringResource(R.string.tab_title_trending),
         stringResource(R.string.tab_title_latest),
@@ -115,11 +120,17 @@ private fun SearchContent(
         )
         TabView(
             selectedTabIndex = state.selectedTabIndex,
-            onTabSelected = { onAction(SearchAction.OnTabSelected(it)) },
+            onTabSelected = { tabIndex ->
+                scope.launch {
+                    onAction(SearchAction.OnTabSelected(tabIndex))
+                    pagerState.animateScrollToPage(tabIndex)
+                }
+            },
             tabs = tabs,
         )
         SearchHorizontalPager(
             state = state,
+            pagerState = pagerState,
             pageCount = tabs.size,
             onTabSelected = { onAction(SearchAction.OnTabSelected(it)) },
             onProfileClick = { onAction(SearchAction.OnProfileBodyClick(it)) },
@@ -133,13 +144,13 @@ private fun SearchContent(
 @Composable
 private fun SearchHorizontalPager(
     state: SearchState,
+    pagerState: PagerState,
     pageCount: Int,
     onTabSelected: (Int) -> Unit,
     onProfileClick: (Profile) -> Unit,
     onFollowButtonClick: (Profile) -> Unit,
     onPostAction: (PostAction) -> Unit,
 ) {
-    val pagerState = rememberPagerState(state.selectedTabIndex)
     HorizontalPager(
         modifier = Modifier.fillMaxSize(),
         pageCount = pageCount,

@@ -55,11 +55,27 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    private fun onProfileFollowButtonClick(profile: Profile) {}
+    private fun onProfileFollowButtonClick(profile: Profile) {
+        _state.update { state ->
+            state.copy(
+                profiles = state.profiles.map {
+                    if (profile.id == it.id) {
+                        profile.copy(isFollowed = profile.isFollowed.not())
+                    } else {
+                        it
+                    }
+                }.toMutableList()
+            )
+        }
+    }
 
-    private fun onProfileBodyClick(profile: Profile) {}
+    private fun onProfileBodyClick(profile: Profile) {
+        viewModelScope.launch {
+            _navEvent.emit(SearchNavEvent.OpenProfile)
+        }
+    }
 
-    private fun onSearchBarClick() {}
+    private fun onSearchBarClick() { /* Opens search action bottom sheet. */ }
 
     private fun onSearchBarQueryChange(text: String) {
         _state.update { it.copy(searchText = it.searchText.copy(text = text)) }
