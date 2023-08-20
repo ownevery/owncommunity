@@ -191,11 +191,12 @@ private fun StoryPager(
         state = state,
         beyondBoundsPageCount = 5,
     ) { index ->
+        if (items[index].storyImages.isEmpty()) return@HorizontalPager
         HomeStoryPagerItem(
             itemWidth = itemWidth,
             itemHeight = itemHeight,
             profileImage = painterResource(id = items[index].profileImage),
-            storyImage = painterResource(id = items[index].storyImage),
+            storyImage = painterResource(id = items[index].storyImages.first()),
             isStoryRead = items[index].isRead,
             onClick = { onStoryClick(items[index]) },
         )

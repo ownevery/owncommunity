@@ -4,16 +4,18 @@ import androidx.annotation.DrawableRes
 
 data class Story(
     val id: String,
-    @DrawableRes val storyImage: Int,
+    val storyImages: List<Int>,
     @DrawableRes val profileImage: Int,
     val isRead: Boolean,
+    val index: Int,
 ) {
     companion object {
         val EMPTY = Story(
             id = "",
-            storyImage = 0,
+            storyImages = listOf(),
             profileImage = 0,
             isRead = false,
+            index = 0,
         )
     }
 }

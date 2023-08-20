@@ -231,7 +231,7 @@ private fun AlertListItemDivider() {
 @Composable
 private fun AlertsScreenContentPreview() {
     AlertsScreenContent(
-        state = AlertsUseCase().getState(),
+        state = AlertsState.EMPTY.copy(alertItems = AlertsUseCase().getAlerts()),
         lazyListState = rememberLazyListState(),
         onAction = {},
     )

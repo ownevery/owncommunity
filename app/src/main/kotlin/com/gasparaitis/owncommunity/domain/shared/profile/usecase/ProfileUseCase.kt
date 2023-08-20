@@ -57,6 +57,6 @@ class ProfileUseCase {
             followerCount = 39,
             isFollowed = false,
         )
-        val suggestedProfiles = listOf(profile1, profile2, profile3, profile4, profile5, profile6, profile7)
+        private val suggestedProfiles = listOf(profile1, profile2, profile3, profile4, profile5, profile6, profile7)
     }
 }

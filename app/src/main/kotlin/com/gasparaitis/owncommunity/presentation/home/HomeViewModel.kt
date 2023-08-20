@@ -2,9 +2,11 @@ package com.gasparaitis.owncommunity.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gasparaitis.owncommunity.domain.home.usecase.HomeUseCase
+import com.gasparaitis.owncommunity.domain.alerts.usecase.AlertsUseCase
 import com.gasparaitis.owncommunity.domain.shared.post.model.Post
+import com.gasparaitis.owncommunity.domain.shared.post.usecase.PostUseCase
 import com.gasparaitis.owncommunity.domain.shared.story.model.Story
+import com.gasparaitis.owncommunity.domain.shared.story.usecase.StoryUseCase
 import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostAction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -13,11 +15,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val homeUseCase: HomeUseCase,
+    private val alertsUseCase: AlertsUseCase,
+    private val postUseCase: PostUseCase,
+    private val storyUseCase: StoryUseCase,
 ) : ViewModel() {
     private val _state: MutableStateFlow<HomeState> = MutableStateFlow(HomeState.EMPTY)
     val state: StateFlow<HomeState> = _state.asStateFlow()
@@ -30,7 +35,16 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun onCreated() {
-        _state.value = homeUseCase.getState()
+        val areAllAlertsRead = alertsUseCase.getAreAllItemsRead()
+        val posts = postUseCase.getHomePosts()
+        val stories = storyUseCase.getStories()
+        _state.update { state ->
+            state.copy(
+                areAllAlertsRead = areAllAlertsRead,
+                posts = posts,
+                stories = stories,
+            )
+        }
     }
 
     fun onAction(action: HomeAction) {

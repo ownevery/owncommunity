@@ -2,9 +2,10 @@ package com.gasparaitis.owncommunity.presentation.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gasparaitis.owncommunity.domain.search.usecase.SearchUseCase
 import com.gasparaitis.owncommunity.domain.shared.post.model.Post
+import com.gasparaitis.owncommunity.domain.shared.post.usecase.PostUseCase
 import com.gasparaitis.owncommunity.domain.shared.profile.model.Profile
+import com.gasparaitis.owncommunity.domain.shared.profile.usecase.ProfileUseCase
 import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostAction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -18,7 +19,8 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val searchUseCase: SearchUseCase,
+    private val postUseCase: PostUseCase,
+    private val profileUseCase: ProfileUseCase,
 ) : ViewModel() {
     private val _state: MutableStateFlow<SearchState> = MutableStateFlow(SearchState.EMPTY)
     val state: StateFlow<SearchState> = _state.asStateFlow()
@@ -31,7 +33,19 @@ class SearchViewModel @Inject constructor(
     }
 
     private fun onCreated() {
-        _state.value = searchUseCase.getState()
+        val trendingPosts = postUseCase.getTrendingPosts()
+        val latestPosts = postUseCase.getLatestPosts()
+        val profiles = profileUseCase.getSuggestedProfiles()
+        _state.update { state ->
+            state.copy(
+                selectedTabIndex = state.selectedTabIndex,
+                searchText = state.searchText,
+                trendingPosts = trendingPosts,
+                latestPosts = latestPosts,
+                profiles = profiles,
+
+            )
+        }
     }
 
     fun onAction(action: SearchAction) {

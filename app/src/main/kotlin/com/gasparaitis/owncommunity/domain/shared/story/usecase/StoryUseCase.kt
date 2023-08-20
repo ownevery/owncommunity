@@ -10,25 +10,25 @@ class StoryUseCase {
     companion object {
         private val story1 = Story.EMPTY.copy(
             id = UUID.randomUUID().toString(),
-            storyImage = R.drawable.demo_story_1,
+            storyImages = listOf(R.drawable.demo_story_1),
             profileImage = R.drawable.demo_profile_picture_1,
             isRead = false,
         )
         private val story2 = Story.EMPTY.copy(
             id = UUID.randomUUID().toString(),
-            storyImage = R.drawable.demo_story_2,
+            storyImages = listOf(R.drawable.demo_story_2),
             profileImage = R.drawable.demo_profile_picture_2,
             isRead = true,
         )
         private val story3 = Story.EMPTY.copy(
             id = UUID.randomUUID().toString(),
-            storyImage = R.drawable.demo_story_3,
+            storyImages = listOf(R.drawable.demo_story_3),
             profileImage = R.drawable.demo_profile_picture_3,
             isRead = false,
         )
         private val story4 = Story.EMPTY.copy(
             id = UUID.randomUUID().toString(),
-            storyImage = R.drawable.demo_story_4,
+            storyImages = listOf(R.drawable.demo_story_4),
             profileImage = R.drawable.demo_profile_picture_4,
             isRead = true,
         )

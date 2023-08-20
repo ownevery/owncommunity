@@ -3,16 +3,15 @@ package com.gasparaitis.owncommunity.domain.alerts.usecase
 import com.gasparaitis.owncommunity.domain.alerts.model.AlertItem
 import com.gasparaitis.owncommunity.domain.alerts.model.AlertItemSection
 import com.gasparaitis.owncommunity.domain.alerts.model.AlertItemType
-import com.gasparaitis.owncommunity.presentation.alerts.AlertsState
 import com.gasparaitis.owncommunity.presentation.utils.extensions.ClockUtils
 import java.util.UUID
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
 class AlertsUseCase {
-    fun getState(): AlertsState = AlertsState.EMPTY.copy(
-        alertItems = alerts.groupBy { it.section },
-    )
+    fun getAlerts(): Map<AlertItemSection, List<AlertItem>> = alerts.groupBy { it.section }
+    fun getAreAllItemsRead(): Boolean = false
+
     companion object {
         private val alert1 = AlertItem.EMPTY.copy(
             id = UUID.randomUUID().toString(),

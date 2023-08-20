@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -29,7 +30,10 @@ class AlertsViewModel @Inject constructor(
     }
 
     private fun onCreated() {
-        _state.value = alertsUseCase.getState()
+        val alerts = alertsUseCase.getAlerts()
+        _state.update { state ->
+            state.copy(alertItems = alerts)
+        }
     }
 
     fun onAction(action: AlertsAction) {
