@@ -47,6 +47,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
+
 dependencies {
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
@@ -68,6 +69,9 @@ dependencies {
     "kapt"(libs.hilt.compiler)
 
     implementation(libs.kotlinx.datetime)
+
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.palette)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)

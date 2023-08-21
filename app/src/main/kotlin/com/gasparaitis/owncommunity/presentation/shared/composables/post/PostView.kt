@@ -157,17 +157,16 @@ private fun PostImagePager(
     itemWidth: Dp,
     itemHeight: Dp,
 ) {
-    val state = rememberPagerState()
+    val state = rememberPagerState { images.size }
     Column {
         HorizontalPager(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp)
                 .padding(start = 24.dp),
-            pageCount = images.size,
-            pageSize = PageSize.Fixed(itemWidth),
-            pageSpacing = 12.dp,
             state = state,
+            pageSpacing = 12.dp,
+            pageSize = PageSize.Fixed(itemWidth),
             beyondBoundsPageCount = 3,
         ) { index ->
             PostImage(

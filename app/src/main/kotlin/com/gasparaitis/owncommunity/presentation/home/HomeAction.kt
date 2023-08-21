@@ -5,7 +5,6 @@ import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostAct
 
 sealed class HomeAction {
     object OnAlertIconClick : HomeAction()
-    object OnHomeIconRepeatClick : HomeAction()
     data class OnStoryClick(val item: Story) : HomeAction()
     data class OnPostAction(val postAction: PostAction) : HomeAction()
 }

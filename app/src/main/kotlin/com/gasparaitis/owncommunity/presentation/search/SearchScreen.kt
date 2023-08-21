@@ -105,13 +105,15 @@ private fun SearchContent(
     state: SearchState,
     onAction: (SearchAction) -> Unit,
 ) {
-    val pagerState = rememberPagerState(state.selectedTabIndex)
     val scope = rememberCoroutineScope()
     val tabs = listOf(
         stringResource(R.string.tab_title_trending),
         stringResource(R.string.tab_title_latest),
         stringResource(R.string.tab_title_people),
     )
+    val pagerState = rememberPagerState(
+        initialPage = state.selectedTabIndex,
+    ) { tabs.size }
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBarView(
             searchText = state.searchText,
@@ -131,7 +133,6 @@ private fun SearchContent(
         SearchHorizontalPager(
             state = state,
             pagerState = pagerState,
-            pageCount = tabs.size,
             onTabSelected = { onAction(SearchAction.OnTabSelected(it)) },
             onProfileClick = { onAction(SearchAction.OnProfileBodyClick(it)) },
             onFollowButtonClick = { onAction(SearchAction.OnProfileFollowButtonClick(it)) },
@@ -145,7 +146,6 @@ private fun SearchContent(
 private fun SearchHorizontalPager(
     state: SearchState,
     pagerState: PagerState,
-    pageCount: Int,
     onTabSelected: (Int) -> Unit,
     onProfileClick: (Profile) -> Unit,
     onFollowButtonClick: (Profile) -> Unit,
@@ -153,9 +153,8 @@ private fun SearchHorizontalPager(
 ) {
     HorizontalPager(
         modifier = Modifier.fillMaxSize(),
-        pageCount = pageCount,
         state = pagerState,
-        beyondBoundsPageCount = 2,
+        beyondBoundsPageCount = 2
     ) { index ->
         when (index) {
             0 -> {

@@ -51,7 +51,6 @@ class HomeViewModel @Inject constructor(
         when (action) {
             is HomeAction.OnStoryClick -> onStoryClick(action.item)
             HomeAction.OnAlertIconClick -> onAlertIconClick()
-            HomeAction.OnHomeIconRepeatClick -> onHomeIconRepeatClick()
             is HomeAction.OnPostAction -> {
                 when (action.postAction) {
                     is PostAction.OnAuthorClick -> onPostAuthorClick(action.postAction.item)

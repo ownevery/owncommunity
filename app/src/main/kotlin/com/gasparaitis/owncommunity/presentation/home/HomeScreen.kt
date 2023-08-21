@@ -41,6 +41,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.gasparaitis.owncommunity.R
 import com.gasparaitis.owncommunity.domain.shared.story.model.Story
 import com.gasparaitis.owncommunity.presentation.destinations.HomeScreenDestination
+import com.gasparaitis.owncommunity.presentation.main.MainEvent
+import com.gasparaitis.owncommunity.presentation.main.MainViewModel
 import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostView
 import com.gasparaitis.owncommunity.presentation.utils.extensions.componentActivity
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
@@ -56,7 +58,8 @@ import com.ramcosta.composedestinations.navigation.popUpTo
 @Composable
 fun HomeScreen(
     navigator: DestinationsNavigator,
-    viewModel: HomeViewModel = hiltViewModel(LocalContext.current.componentActivity),
+    viewModel: HomeViewModel = hiltViewModel(),
+    mainViewModel: MainViewModel = hiltViewModel(LocalContext.current.componentActivity),
 ) {
     val state = viewModel.state.collectAsState()
     val lazyListState = rememberLazyListState()
@@ -67,12 +70,16 @@ fun HomeScreen(
     )
     LaunchedEffect(Unit) {
         viewModel.navEvent.collect {
-            if (it is HomeNavEvent.ScrollUp && lazyListState.canScrollBackward) {
-                lazyListState.animateScrollToItem(0)
-                return@collect
-            }
             navigator.navigate(it.destination) {
                 popUpTo(HomeScreenDestination) { saveState = true }
+            }
+        }
+    }
+    LaunchedEffect(Unit) {
+        mainViewModel.event.collect {
+            if (it is MainEvent.OnHomeIconRepeatClick && lazyListState.canScrollBackward) {
+                lazyListState.animateScrollToItem(0)
+                return@collect
             }
         }
     }
@@ -179,17 +186,16 @@ private fun StoryPager(
     itemWidth: Dp = 100.dp,
     itemHeight: Dp = 140.dp,
 ) {
-    val state = rememberPagerState()
+    val state = rememberPagerState { items.size }
     HorizontalPager(
         modifier = Modifier.padding(
             start = 24.dp,
             bottom = 24.dp,
         ),
-        pageCount = items.size,
-        pageSize = PageSize.Fixed(itemWidth),
-        pageSpacing = 12.dp,
         state = state,
-        beyondBoundsPageCount = 5,
+        pageSpacing = 12.dp,
+        pageSize = PageSize.Fixed(itemWidth),
+        beyondBoundsPageCount = 5
     ) { index ->
         if (items[index].storyImages.isEmpty()) return@HorizontalPager
         HomeStoryPagerItem(

@@ -4,31 +4,35 @@ build-code = "1"
 build-name = "0.0.1"
 build-testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 build-sdk-min = "24"
-build-sdk-compile = "33"
-build-sdk-target = "33"
+build-sdk-compile = "34"
+build-sdk-target = "34"
 
 activity-compose = "1.7.2"
-agp = "8.1.0-rc01"
+agp = "8.1.0"
 androidx-test-ext-junit = "1.1.5"
 androidxHiltNavigationCompose = "1.0.0"
-compose-bom = "2023.06.01"
-compose-compiler = "1.4.8"
-compose-destinations-core = "1.9.42-beta"
-compose-destinations-ksp = "1.9.42-beta"
+coilCompose = "2.4.0"
+compose-bom = "2023.08.00"
+compose-compiler = "1.5.1"
+compose-destinations-core = "1.9.50"
+compose-destinations-ksp = "1.9.50"
 core-ktx = "1.10.1"
 espresso-core = "3.5.1"
 gms = "4.3.15"
-hilt = "2.45"
+hilt = "2.47"
 hiltExt = "1.0.0"
 junit = "4.13.2"
-kotlin = "1.8.22"
+kotlin = "1.9.0"
 kotlinxDatetime = "0.4.0"
-ksp = "1.8.22-1.0.11"
+ksp = "1.9.0-1.0.13"
 lifecycle-runtime-ktx = "2.6.1"
-material = "1.4.3"
+material = "1.5.0"
+palette = "1.0.0"
 
 [libraries]
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigationCompose" }
+androidx-palette = { module = "androidx.palette:palette", version.ref = "palette" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
