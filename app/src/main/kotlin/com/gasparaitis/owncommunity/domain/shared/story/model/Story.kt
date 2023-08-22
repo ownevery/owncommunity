@@ -1,11 +1,11 @@
 package com.gasparaitis.owncommunity.domain.shared.story.model
 
-import androidx.annotation.DrawableRes
+import com.gasparaitis.owncommunity.domain.shared.profile.model.Profile
 
 data class Story(
     val id: String,
     val storyImages: List<Int>,
-    @DrawableRes val profileImage: Int,
+    val profile: Profile,
     val isRead: Boolean,
     val index: Int,
 ) {
@@ -13,7 +13,7 @@ data class Story(
         val EMPTY = Story(
             id = "",
             storyImages = listOf(),
-            profileImage = 0,
+            profile = Profile.EMPTY,
             isRead = false,
             index = 0,
         )

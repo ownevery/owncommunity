@@ -3,7 +3,6 @@ package com.gasparaitis.owncommunity.presentation.home
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +17,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -44,11 +42,11 @@ import com.gasparaitis.owncommunity.presentation.destinations.HomeScreenDestinat
 import com.gasparaitis.owncommunity.presentation.main.MainEvent
 import com.gasparaitis.owncommunity.presentation.main.MainViewModel
 import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostView
+import com.gasparaitis.owncommunity.presentation.shared.composables.story.StoryProfileImage
 import com.gasparaitis.owncommunity.presentation.utils.extensions.componentActivity
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
 import com.gasparaitis.owncommunity.presentation.utils.theme.TextStyles
-import com.gasparaitis.owncommunity.presentation.utils.theme.defaultGradientBrush
 import com.gasparaitis.owncommunity.presentation.utils.theme.slightDarkGradientBrush
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -201,7 +199,7 @@ private fun StoryPager(
         HomeStoryPagerItem(
             itemWidth = itemWidth,
             itemHeight = itemHeight,
-            profileImage = painterResource(id = items[index].profileImage),
+            profileImage = painterResource(id = items[index].profile.profileImage),
             storyImage = painterResource(id = items[index].storyImages.first()),
             isStoryRead = items[index].isRead,
             onClick = { onStoryClick(items[index]) },
@@ -229,7 +227,7 @@ private fun HomeStoryPagerItem(
             itemHeight = itemHeight,
             image = storyImage,
         )
-        HomeStoryHorizontalPagerItemProfileImage(
+        StoryProfileImage(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .zIndex(2f),
@@ -260,33 +258,6 @@ private fun HomeStoryHorizontalPagerItemMainImage(
         contentScale = ContentScale.FillHeight,
         painter = image,
         contentDescription = "Story image",
-    )
-}
-
-@Composable
-private fun HomeStoryHorizontalPagerItemProfileImage(
-    modifier: Modifier,
-    onClick: () -> Unit,
-    image: Painter,
-    shouldShowBorder: Boolean,
-) {
-    val gradientBorder = Modifier
-        .border(width = 2.dp, brush = defaultGradientBrush(), shape = CircleShape)
-    val blackBorder = Modifier
-        .border(width = 2.dp, color = Colors.PureBlack, shape = CircleShape)
-    Image(
-        modifier = Modifier
-            .padding(bottom = 8.dp)
-            .then(if (shouldShowBorder) gradientBorder else Modifier)
-            .padding(2.dp)
-            .size(40.dp)
-            .clip(CircleShape)
-            .then(if (shouldShowBorder) blackBorder else Modifier)
-            .then(modifier)
-            .noRippleClickable(onClick),
-        contentScale = ContentScale.Crop,
-        painter = image,
-        contentDescription = "Story profile image",
     )
 }
 

@@ -43,7 +43,6 @@ class SearchViewModel @Inject constructor(
                 trendingPosts = trendingPosts,
                 latestPosts = latestPosts,
                 profiles = profiles,
-
             )
         }
     }

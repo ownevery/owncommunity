@@ -72,6 +72,7 @@ dependencies {
 
     implementation(libs.coil.compose)
     implementation(libs.androidx.palette)
+    implementation(libs.accompanist.drawablepainter)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)

@@ -11,13 +11,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.gasparaitis.owncommunity.presentation.NavGraphs
-import com.gasparaitis.owncommunity.presentation.destinations.AlertsScreenDestination
-import com.gasparaitis.owncommunity.presentation.destinations.CreateScreenDestination
+import com.gasparaitis.owncommunity.presentation.appCurrentDestinationAsState
 import com.gasparaitis.owncommunity.presentation.destinations.Destination
 import com.gasparaitis.owncommunity.presentation.destinations.HomeScreenDestination
-import com.gasparaitis.owncommunity.presentation.destinations.PostScreenDestination
-import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
-import com.gasparaitis.owncommunity.presentation.destinations.SearchScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.StoryScreenDestination
 import com.gasparaitis.owncommunity.presentation.utils.extensions.componentActivity
 import com.gasparaitis.owncommunity.presentation.utils.theme.AppTheme
@@ -28,6 +24,7 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(LocalContext.current.componentActivity)
 ) {
     val navController = rememberNavController()
+    val currentDestination = navController.appCurrentDestinationAsState()
     AppTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -36,10 +33,12 @@ fun MainScreen(
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
                 bottomBar = {
-                    BottomNavigationBar(
-                        navController = navController,
-                        onHomeDestinationRepeatClick = { viewModel.onEvent(MainEvent.OnHomeIconRepeatClick) },
-                    )
+                    if (shouldShowBottomNavigationBar(currentDestination.value)) {
+                        BottomNavigationBar(
+                            navController = navController,
+                            onHomeDestinationRepeatClick = { viewModel.onEvent(MainEvent.OnHomeIconRepeatClick) },
+                        )
+                    }
                 },
             ) { paddingValues ->
                 DestinationsNavHost(
@@ -52,13 +51,7 @@ fun MainScreen(
         }
     }
 }
-fun shouldShowBottomNavigationBar(destination: Destination) = when (destination) {
-    AlertsScreenDestination -> TODO()
-    CreateScreenDestination -> TODO()
-    HomeScreenDestination -> TODO()
-    PostScreenDestination -> TODO()
-    ProfileScreenDestination -> TODO()
-    SearchScreenDestination -> TODO()
-    StoryScreenDestination -> TODO()
+fun shouldShowBottomNavigationBar(destination: Destination?) = when (destination) {
+    StoryScreenDestination -> false
     else -> true
 }
