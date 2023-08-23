@@ -44,6 +44,52 @@ class StoryViewModel @Inject constructor(
             is StoryAction.OnStoryReplyQueryChange -> onStoryReplyQueryChange(action.query)
             StoryAction.OnStoryReplySend -> onStoryReplySend()
             is StoryAction.OnTabSelected -> onTabSelected(action.index)
+            is StoryAction.OnStoryGoBack -> onStoryGoBack(action.storyIndex, action.storyItemIndex)
+            is StoryAction.OnStoryGoForward -> onStoryGoForward(action.storyIndex, action.storyItemIndex)
+        }
+    }
+
+    private fun onStoryGoBack(storyIndex: Int, storyEntryIndex: Int) {
+        _state.update { state ->
+            state.copy(
+                stories = state.stories.mapIndexed { index, story ->
+                    if (index == storyIndex) {
+                        story.copy(
+                            storyEntries = story.storyEntries.mapIndexed { entryIndex, storyEntry ->
+                                if (entryIndex == storyEntryIndex) {
+                                    storyEntry.copy(isSeen = false)
+                                } else {
+                                    storyEntry
+                                }
+                            }
+                        )
+                    } else {
+                        story
+                    }
+                }
+            )
+        }
+    }
+
+    private fun onStoryGoForward(storyIndex: Int, storyEntryIndex: Int) {
+        _state.update { state ->
+            state.copy(
+                stories = state.stories.mapIndexed { index, story ->
+                    if (index == storyIndex) {
+                        story.copy(
+                            storyEntries = story.storyEntries.mapIndexed { entryIndex, storyEntry ->
+                                if (entryIndex == storyEntryIndex) {
+                                    storyEntry.copy(isSeen = true)
+                                } else {
+                                    storyEntry
+                                }
+                            }
+                        )
+                    } else {
+                        story
+                    }
+                }
+            )
         }
     }
 

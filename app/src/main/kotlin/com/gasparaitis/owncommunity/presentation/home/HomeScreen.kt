@@ -47,7 +47,7 @@ import com.gasparaitis.owncommunity.presentation.utils.extensions.componentActiv
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
 import com.gasparaitis.owncommunity.presentation.utils.theme.TextStyles
-import com.gasparaitis.owncommunity.presentation.utils.theme.slightDarkGradientBrush
+import com.gasparaitis.owncommunity.presentation.utils.theme.slightBottomDarkGradientBrush
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.popUpTo
@@ -195,12 +195,12 @@ private fun StoryPager(
         pageSize = PageSize.Fixed(itemWidth),
         beyondBoundsPageCount = 5
     ) { index ->
-        if (items[index].storyImages.isEmpty()) return@HorizontalPager
+        if (items[index].storyEntries.isEmpty()) return@HorizontalPager
         HomeStoryPagerItem(
             itemWidth = itemWidth,
             itemHeight = itemHeight,
             profileImage = painterResource(id = items[index].profile.profileImage),
-            storyImage = painterResource(id = items[index].storyImages.first()),
+            storyImage = painterResource(id = items[index].storyEntries.first().drawableResId),
             isStoryRead = items[index].isRead,
             onClick = { onStoryClick(items[index]) },
         )
@@ -271,7 +271,7 @@ private fun HomeStoryHorizontalPagerItemDarkGradientBox(
         modifier = Modifier
             .size(width = itemWidth, height = itemHeight)
             .clip(RoundedCornerShape(16.dp))
-            .background(brush = slightDarkGradientBrush())
+            .background(brush = slightBottomDarkGradientBrush())
             .then(modifier),
     )
 }

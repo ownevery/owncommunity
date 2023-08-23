@@ -1,15 +1,17 @@
 package com.gasparaitis.owncommunity.presentation.story
 
 import android.graphics.drawable.Drawable
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.animateFloatAsState
+import android.util.Log
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,24 +21,20 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,20 +48,18 @@ import com.gasparaitis.owncommunity.domain.shared.story.model.Story
 import com.gasparaitis.owncommunity.presentation.destinations.StoryScreenDestination
 import com.gasparaitis.owncommunity.presentation.shared.composables.story.StoryProfileImage
 import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableFollowerCount
-import com.gasparaitis.owncommunity.presentation.utils.extensions.offsetForPage
 import com.gasparaitis.owncommunity.presentation.utils.extensions.verticalBackgroundGradientBrush
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
+import com.gasparaitis.owncommunity.presentation.utils.modifier.pagerCubeTransition
+import com.gasparaitis.owncommunity.presentation.utils.modifier.storyPointerInput
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
 import com.gasparaitis.owncommunity.presentation.utils.theme.TextStyles
+import com.gasparaitis.owncommunity.presentation.utils.theme.slightTopDarkGradientBrush
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.popUpTo
-import kotlin.math.absoluteValue
-import kotlin.math.min
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 @Destination
@@ -100,7 +96,9 @@ fun StoryContent(
             stories = state.stories,
             pagerState = pagerState,
             onPageSelected = {},
-            onProfileClick = { onAction(StoryAction.OnProfileClick(it)) }
+            onProfileClick = { onAction(StoryAction.OnProfileClick(it)) },
+            onBack = { storyIndex, storyItemIndex -> onAction(StoryAction.OnStoryGoBack(storyIndex, storyItemIndex)) },
+            onForward = { storyIndex, storyItemIndex -> onAction(StoryAction.OnStoryGoForward(storyIndex, storyItemIndex)) },
         )
     }
 }
@@ -112,6 +110,8 @@ private fun StoryHorizontalPager(
     pagerState: PagerState,
     onPageSelected: (Int) -> Unit,
     onProfileClick: (Profile) -> Unit,
+    onBack: (Int, Int) -> Unit,
+    onForward: (Int, Int) -> Unit,
 ) {
     HorizontalPager(
         modifier = Modifier.fillMaxSize(),
@@ -122,21 +122,16 @@ private fun StoryHorizontalPager(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
-                .graphicsLayer {
-                    val pageOffset = pagerState.offsetForPage(index)
-                    val offScreenRight = pageOffset < 0f
-                    val deg = 105f
-                    val interpolated = FastOutLinearInEasing.transform(pageOffset.absoluteValue)
-                    rotationY = min(interpolated * if (offScreenRight) deg else -deg, 90f)
-                    transformOrigin = TransformOrigin(
-                        pivotFractionX = if (offScreenRight) 0f else 1f,
-                        pivotFractionY = .5f
-                    )
-                }
+                .pagerCubeTransition(
+                    pagerState = pagerState,
+                    index = index
+                )
         ) {
             StoryView(
                 story = stories[index],
-                onProfileClick = { onProfileClick(stories[index].profile) }
+                onProfileClick = { onProfileClick(stories[index].profile) },
+                onBack = { itemIndex -> onBack(index, itemIndex) },
+                onForward = { itemIndex -> onForward(index, itemIndex) },
             )
         }
     }
@@ -153,35 +148,84 @@ private fun StoryHorizontalPager(
 private fun StoryView(
     story: Story,
     onProfileClick: () -> Unit,
+    onBack: (Int) -> Unit,
+    onForward: (Int) -> Unit,
 ) {
     var index by remember { mutableIntStateOf(0) }
-    StoryViewItem(
-        story = story,
-        onFirstHalfClick = {
-            index = index.dec().coerceIn(0, story.storyImages.size.dec())
-        },
-        onSecondHalfClick = {
-            index = index.inc().coerceIn(0, story.storyImages.size.dec())
-        },
-        onProfileClick = onProfileClick,
-        drawable = ContextCompat.getDrawable(
-            LocalContext.current,
-            story.storyImages[index]
-        )!!
+    var isPaused by remember { mutableStateOf(false) }
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        StoryTopGradient(
+            modifier = Modifier.zIndex(2f),
+        )
+        Column(
+            modifier = Modifier
+                .zIndex(3f)
+                .padding(top = 8.dp)
+                .padding(horizontal = 24.dp)
+        ) {
+            LinearIndicatorRow(
+                story = story,
+                currentIndex = index,
+                onAnimationEnd = { index = index.inc().coerceIn(0, story.storyEntries.size.dec()) },
+                isPaused = isPaused,
+            )
+            StoryProfileRow(
+                story = story,
+                onClick = onProfileClick,
+            )
+        }
+        StoryViewItem(
+            onHold = { isReleased ->
+                isPaused = !isReleased
+                Log.d("justas", "onHold($isReleased)")
+            },
+            onFirstHalfTap = {
+                index = index.dec().coerceIn(0, story.storyEntries.size.dec())
+                onBack(index)
+                Log.d("justas", "onFirstHalfTap")
+            },
+            onSecondHalfTap = {
+                onForward(index)
+                index = index.inc().coerceIn(0, story.storyEntries.size.dec())
+                Log.d("justas", "onSecondHalfTap")
+            },
+            drawable = ContextCompat.getDrawable(
+                LocalContext.current,
+                story.storyEntries[index].drawableResId
+            )!!
+        )
+    }
+}
+
+@Composable
+fun StoryTopGradient(
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(brush = slightTopDarkGradientBrush())
+            .then(modifier)
     )
 }
 
 @Composable
 private fun StoryViewItem(
-    story: Story,
     drawable: Drawable,
-    onFirstHalfClick: () -> Unit,
-    onSecondHalfClick: () -> Unit,
-    onProfileClick: () -> Unit,
+    onHold: (Boolean) -> Unit,
+    onFirstHalfTap: () -> Unit,
+    onSecondHalfTap: () -> Unit,
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .storyPointerInput(
+                onFirstHalfTap = onFirstHalfTap,
+                onSecondHalfTap = onSecondHalfTap,
+                onHold = onHold,
+            )
     ) {
         StoryViewItemBackgroundBox(
             modifier = Modifier.zIndex(0f),
@@ -190,20 +234,6 @@ private fun StoryViewItem(
         StoryImage(
             modifier = Modifier.zIndex(1f),
             drawable = drawable
-        )
-        LinearIndicator()
-        StoryProfileRow(
-            modifier = Modifier.zIndex(2f),
-            story = story,
-            onClick = onProfileClick,
-        )
-        HalfWidthBox(
-            modifier = Modifier.align(Alignment.CenterStart),
-            onClick = onFirstHalfClick
-        )
-        HalfWidthBox(
-            modifier = Modifier.align(Alignment.CenterEnd),
-            onClick = onSecondHalfClick
         )
     }
 }
@@ -215,7 +245,11 @@ fun StoryProfileRow(
     onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.noRippleClickable(onClick)
+        modifier = Modifier
+            .padding(top = 12.dp)
+            .then(modifier)
+            .noRippleClickable { onClick() },
+        verticalAlignment = Alignment.Top,
     ) {
         StoryProfileImage(
             onClick = onClick,
@@ -242,20 +276,6 @@ fun StoryProfileRow(
             )
         }
     }
-}
-
-@Composable
-private fun HalfWidthBox(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth(0.5f)
-            .then(modifier)
-            .noRippleClickable(onClick = onClick)
-    )
 }
 
 @Composable
@@ -287,16 +307,22 @@ private fun StoryViewItemBackgroundBox(
 
 @Composable
 fun LinearIndicatorRow(
-    count: Int = 5,
+    story: Story,
+    currentIndex: Int,
+    onAnimationEnd: () -> Unit,
+    isPaused: Boolean,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        repeat(count) {
+        repeat(story.storyEntries.size) { index ->
             LinearIndicator(
                 modifier = Modifier.weight(1f),
+                onAnimationEnd = onAnimationEnd,
+                isActive = currentIndex == index,
+                isCompleted = story.storyEntries[index].isSeen,
+                isPaused = isPaused,
             )
         }
     }
@@ -305,39 +331,48 @@ fun LinearIndicatorRow(
 @Composable
 private fun LinearIndicator(
     modifier: Modifier = Modifier,
-    indicatorBackgroundColor: Color = Colors.DarkBlack,
-    indicatorProgressColor: Color = Colors.PureWhite,
-    slideDurationInSeconds: Long = 5L,
+    durationMillis: Int = 5000,
     onAnimationEnd: () -> Unit = {},
-    onPauseTimer: Boolean = false,
-    hideIndicators: Boolean = false,
+    isActive: Boolean = false,
+    isCompleted: Boolean = false,
+    isPaused: Boolean = false,
 ) {
-    val delayInMillis = rememberSaveable { (slideDurationInSeconds * 1000) / 100 }
-    var progress by remember { mutableFloatStateOf(0.00f) }
-    val animatedProgress by animateFloatAsState(
-        targetValue = progress,
-        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
-        label = ""
-    )
-    if (hideIndicators.not()) {
-        LinearProgressIndicator(
-            backgroundColor = indicatorBackgroundColor,
-            color = indicatorProgressColor,
-            modifier = modifier
-                .padding(top = 12.dp, bottom = 12.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            progress = animatedProgress,
-        )
-    }
-    LaunchedEffect(key1 = onPauseTimer) {
-        while (progress < 1f && isActive && onPauseTimer.not()) {
-            progress += 0.01f
-            delay(delayInMillis)
+    val progress = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
+    fun launchAnimation() {
+        scope.launch {
+            progress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(
+                    durationMillis = durationMillis,
+                    delayMillis = 0,
+                    easing = LinearEasing,
+                ),
+            )
         }
-
-        if (onPauseTimer.not()) {
-            delay(200)
+    }
+    LinearProgressIndicator(
+        backgroundColor = Colors.DarkBlack,
+        color = Colors.PureWhite,
+        modifier = modifier
+            .padding(top = 12.dp, bottom = 12.dp)
+            .clip(RoundedCornerShape(12.dp)),
+        progress = if (isCompleted) 1.0f else if (!isActive) 0.0f else progress.value,
+    )
+    LaunchedEffect(key1 = isActive) {
+        if (isActive && isCompleted) {
             onAnimationEnd()
+        } else if (isActive) {
+            launchAnimation()
+        } else {
+            progress.snapTo(0f)
+        }
+    }
+    LaunchedEffect(key1 = isPaused) {
+        if (isActive && isPaused) {
+            progress.stop()
+        } else if (isActive && !isPaused) {
+            launchAnimation()
         }
     }
 }

@@ -3,6 +3,7 @@ package com.gasparaitis.owncommunity.domain.shared.story.usecase
 import com.gasparaitis.owncommunity.R
 import com.gasparaitis.owncommunity.domain.shared.profile.model.Profile
 import com.gasparaitis.owncommunity.domain.shared.story.model.Story
+import com.gasparaitis.owncommunity.domain.shared.story.model.StoryEntry
 import java.util.UUID
 
 class StoryUseCase {
@@ -11,13 +12,13 @@ class StoryUseCase {
     companion object {
         private val story1 = Story.EMPTY.copy(
             id = UUID.randomUUID().toString(),
-            storyImages = listOf(
-                R.drawable.demo_profile_1,
-                R.drawable.demo_profile_2,
-                R.drawable.demo_profile_3,
-                R.drawable.demo_profile_4,
-                R.drawable.demo_profile_5,
-                R.drawable.demo_profile_6,
+            storyEntries = listOf(
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_1),
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_2),
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_3),
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_4),
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_5),
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_6),
             ),
             profile = Profile(
                 id = UUID.randomUUID().toString(),
@@ -30,10 +31,10 @@ class StoryUseCase {
         )
         private val story2 = Story.EMPTY.copy(
             id = UUID.randomUUID().toString(),
-            storyImages = listOf(
-                R.drawable.demo_profile_7,
-                R.drawable.demo_profile_8,
-                R.drawable.demo_profile_9,
+            storyEntries = listOf(
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_7),
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_8),
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_9),
             ),
             profile = Profile(
                 id = UUID.randomUUID().toString(),
@@ -46,11 +47,11 @@ class StoryUseCase {
         )
         private val story3 = Story.EMPTY.copy(
             id = UUID.randomUUID().toString(),
-            storyImages = listOf(
-                R.drawable.demo_profile_10,
-                R.drawable.demo_profile_11,
-                R.drawable.demo_profile_12,
-                R.drawable.demo_profile_13,
+            storyEntries = listOf(
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_10),
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_11),
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_12),
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_13),
             ),
             profile = Profile(
                 id = UUID.randomUUID().toString(),
@@ -63,9 +64,9 @@ class StoryUseCase {
         )
         private val story4 = Story.EMPTY.copy(
             id = UUID.randomUUID().toString(),
-            storyImages = listOf(
-                R.drawable.demo_profile_14,
-                R.drawable.demo_profile_15,
+            storyEntries = listOf(
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_14),
+                StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_15),
             ),
             profile = Profile(
                 id = UUID.randomUUID().toString(),
