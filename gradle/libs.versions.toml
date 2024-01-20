@@ -1,5 +1,5 @@
 [versions]
-accompanistDrawablepainter = "0.30.1"
+accompanistDrawablepainter = "0.32.0"
 build-namespace = "com.gasparaitis.owncommunity"
 build-code = "1"
 build-name = "0.0.1"
@@ -8,27 +8,29 @@ build-sdk-min = "24"
 build-sdk-compile = "34"
 build-sdk-target = "34"
 
-activity-compose = "1.7.2"
-agp = "8.1.0"
+activity-compose = "1.8.2"
+agp = "8.2.1"
 androidx-test-ext-junit = "1.1.5"
-androidxHiltNavigationCompose = "1.0.0"
-coilCompose = "2.4.0"
-compose-bom = "2023.08.00"
-compose-compiler = "1.5.1"
-compose-destinations-core = "1.9.50"
-compose-destinations-ksp = "1.9.50"
-core-ktx = "1.10.1"
+androidxHiltNavigationCompose = "1.1.0"
+coilCompose = "2.5.0"
+compose-bom = "2023.10.01"
+#noinspection GradleDependency until kotlin 1.9.22
+compose-compiler = "1.5.7"
+compose-destinations-core = "1.9.62"
+compose-destinations-ksp = "1.9.62"
+core-ktx = "1.12.0"
 espresso-core = "3.5.1"
-gms = "4.3.15"
-hilt = "2.47"
-hiltExt = "1.0.0"
+gms = "4.4.0"
+hilt = "2.48.1"
+hiltExt = "1.1.0"
 junit = "4.13.2"
-kotlin = "1.9.0"
+kotlin = "1.9.21"
 kotlinxDatetime = "0.4.0"
-ksp = "1.9.0-1.0.13"
-lifecycle-runtime-ktx = "2.6.1"
-material = "1.5.0"
+ksp = "1.9.21-1.0.16"
+lifecycle-runtime-ktx = "2.7.0"
+material = "1.5.4"
 palette = "1.0.0"
+retrofit = "2.9.0"
 
 [libraries]
 accompanist-drawablepainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanistDrawablepainter" }
@@ -51,6 +53,7 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 ui = { group = "androidx.compose.ui", name = "ui" }
 ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
