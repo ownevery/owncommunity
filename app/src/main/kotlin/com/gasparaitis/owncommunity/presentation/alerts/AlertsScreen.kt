@@ -17,7 +17,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -33,8 +33,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gasparaitis.owncommunity.R
 import com.gasparaitis.owncommunity.domain.alerts.usecase.AlertsUseCase
+import com.gasparaitis.owncommunity.presentation.destinations.PostScreenDestination
+import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
 import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableTimeAgo
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
@@ -48,17 +51,41 @@ fun AlertsScreen(
     navigator: DestinationsNavigator,
     viewModel: AlertsViewModel = hiltViewModel(),
 ) {
-    val state = viewModel.state.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lazyListState = rememberLazyListState()
     AlertsScreenContent(
-        state = state.value,
+        state = state,
         lazyListState = lazyListState,
-        onAction = viewModel::onAction,
+        onEvent = viewModel::onEvent,
     )
-    LaunchedEffect(Unit) {
-        viewModel.navEvent.collect {
-            navigator.navigate(it.destination)
+    EventHandler(
+        event = state.event,
+        navigator = navigator,
+        onEventHandled = viewModel::onEventHandled,
+    )
+}
+
+@Composable
+private fun EventHandler(
+    event: AlertsState.Event?,
+    navigator: DestinationsNavigator,
+    onEventHandled: (AlertsState.Event?) -> Unit,
+) {
+    LaunchedEffect(event) {
+        when (event) {
+            AlertsState.NavigateToPostScreen -> {
+                navigator.navigate(PostScreenDestination)
+            }
+
+            AlertsState.NavigateToProfileScreen -> {
+                navigator.navigate(ProfileScreenDestination)
+            }
+
+            is AlertsState.OnAlertItemClick -> {}
+            AlertsState.OnMarkAllAsReadClick -> {}
+            null -> {}
         }
+        onEventHandled(event)
     }
 }
 
@@ -66,22 +93,22 @@ fun AlertsScreen(
 private fun AlertsScreenContent(
     state: AlertsState,
     lazyListState: LazyListState,
-    onAction: (AlertsAction) -> Unit,
+    onEvent: (AlertsState.Event) -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
     ) {
         TopRow(
-            onMarkAllAsReadClick = { onAction(AlertsAction.OnMarkAllAsReadClick) }
+            onMarkAllAsReadClick = { onEvent(AlertsState.OnMarkAllAsReadClick) },
         )
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = lazyListState,
         ) {
-            state.alertItems.forEach { (section, items) ->
+            state.alertMap.forEach { (section, items) ->
                 item {
                     SectionTitle(
-                        title = stringResource(id = section.nameResId)
+                        title = stringResource(id = section.nameResId),
                     )
                     Spacer(Modifier.height(36.dp))
                 }
@@ -89,7 +116,7 @@ private fun AlertsScreenContent(
                     count = items.size,
                 ) { index ->
                     AlertListItem(
-                        onClick = { onAction(AlertsAction.OnAlertItemClick(items[index])) },
+                        onClick = { onEvent(AlertsState.OnAlertItemClick(items[index])) },
                         isRead = items[index].isRead,
                         imagePainter = painterResource(items[index].type.icon),
                         title = items[index].title,
@@ -102,14 +129,13 @@ private fun AlertsScreenContent(
 }
 
 @Composable
-private fun TopRow(
-    onMarkAllAsReadClick: () -> Unit,
-) {
+private fun TopRow(onMarkAllAsReadClick: () -> Unit) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(top = 16.dp, bottom = 32.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(top = 16.dp, bottom = 32.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -121,26 +147,26 @@ private fun TopRow(
         Text(
             modifier = Modifier.noRippleClickable(onClick = onMarkAllAsReadClick),
             text = stringResource(R.string.alerts_screen_mark_all_as_read),
-            style = TextStyles.body.copy(
-                color = Colors.SocialPink,
-                fontWeight = FontWeight.Bold
-            ),
+            style =
+                TextStyles.body.copy(
+                    color = Colors.SocialPink,
+                    fontWeight = FontWeight.Bold,
+                ),
             lineHeight = 24.sp,
         )
     }
 }
 
 @Composable
-private fun SectionTitle(
-    title: String,
-) {
+private fun SectionTitle(title: String,) {
     Text(
         modifier = Modifier.padding(start = 24.dp),
         text = title.toUpperCase(Locale.current),
-        style = TextStyles.body.copy(
-            color = Colors.LightGray,
-            letterSpacing = 1.3.sp,
-        )
+        style =
+            TextStyles.body.copy(
+                color = Colors.LightGray,
+                letterSpacing = 1.3.sp,
+            ),
     )
 }
 
@@ -154,24 +180,25 @@ private fun AlertListItem(
 ) {
     val modifier = if (isRead) Modifier.alpha(0.7f) else Modifier
     Column(
-        modifier = Modifier.noRippleClickable(onClick = onClick)
+        modifier = Modifier.noRippleClickable(onClick = onClick),
     ) {
         Row(
-            modifier = Modifier
-                .padding(horizontal = 24.dp)
-                .then(modifier),
+            modifier =
+                Modifier
+                    .padding(horizontal = 24.dp)
+                    .then(modifier),
         ) {
             AlertListItemIcon(
-                imagePainter = imagePainter
+                imagePainter = imagePainter,
             )
             Column(
-                modifier = Modifier.padding(start = 12.dp)
+                modifier = Modifier.padding(start = 12.dp),
             ) {
                 AlertListItemTitle(
-                    title = title
+                    title = title,
                 )
                 AlertListItemDate(
-                    date = date
+                    date = date,
                 )
             }
         }
@@ -180,12 +207,11 @@ private fun AlertListItem(
 }
 
 @Composable
-private fun AlertListItemIcon(
-    imagePainter: Painter,
-) {
+private fun AlertListItemIcon(imagePainter: Painter,) {
     Image(
-        modifier = Modifier
-            .size(40.dp),
+        modifier =
+            Modifier
+                .size(40.dp),
         painter = imagePainter,
         contentDescription = "Alert icon",
     )
@@ -195,10 +221,11 @@ private fun AlertListItemIcon(
 private fun AlertListItemTitle(title: String) {
     Text(
         text = title,
-        style = TextStyles.body.copy(
-            fontWeight = FontWeight.Bold,
-            lineHeight = 20.sp,
-        ),
+        style =
+            TextStyles.body.copy(
+                fontWeight = FontWeight.Bold,
+                lineHeight = 20.sp,
+            ),
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,
     )
@@ -209,19 +236,21 @@ private fun AlertListItemDate(date: String) {
     Text(
         modifier = Modifier.padding(top = 4.dp),
         text = date,
-        style = TextStyles.secondary.copy(
-            color = Colors.LightGray,
-            lineHeight = 20.sp,
-        )
+        style =
+            TextStyles.secondary.copy(
+                color = Colors.LightGray,
+                lineHeight = 20.sp,
+            ),
     )
 }
 
 @Composable
 private fun AlertListItemDivider() {
     Divider(
-        modifier = Modifier
-            .padding(top = 16.dp, bottom = 24.dp)
-            .fillMaxWidth(),
+        modifier =
+            Modifier
+                .padding(top = 16.dp, bottom = 24.dp)
+                .fillMaxWidth(),
         thickness = 1.dp,
         color = Color.DarkGray,
     )
@@ -231,8 +260,8 @@ private fun AlertListItemDivider() {
 @Composable
 private fun AlertsScreenContentPreview() {
     AlertsScreenContent(
-        state = AlertsState.EMPTY.copy(alertItems = AlertsUseCase().getAlerts()),
+        state = AlertsState.EMPTY.copy(alertMap = AlertsUseCase().getAlerts()),
         lazyListState = rememberLazyListState(),
-        onAction = {},
+        onEvent = {},
     )
 }

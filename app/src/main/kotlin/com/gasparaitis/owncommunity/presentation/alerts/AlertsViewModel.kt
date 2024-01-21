@@ -3,14 +3,11 @@ package com.gasparaitis.owncommunity.presentation.alerts
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gasparaitis.owncommunity.domain.alerts.model.AlertItem
-import com.gasparaitis.owncommunity.domain.alerts.model.AlertItemType
 import com.gasparaitis.owncommunity.domain.alerts.usecase.AlertsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.collections.immutable.mutate
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -19,11 +16,8 @@ import kotlinx.coroutines.launch
 class AlertsViewModel @Inject constructor(
     private val alertsUseCase: AlertsUseCase,
 ) : ViewModel() {
-    private val _state: MutableStateFlow<AlertsState> = MutableStateFlow(AlertsState.EMPTY)
-    val state: StateFlow<AlertsState> = _state.asStateFlow()
-
-    private val _navEvent = MutableSharedFlow<AlertsNavEvent>()
-    val navEvent = _navEvent.asSharedFlow()
+    private val _uiState = MutableStateFlow(AlertsState.EMPTY)
+    val uiState = _uiState.asStateFlow()
 
     init {
         onCreated()
@@ -31,46 +25,78 @@ class AlertsViewModel @Inject constructor(
 
     private fun onCreated() {
         val alerts = alertsUseCase.getAlerts()
-        _state.update { state ->
-            state.copy(alertItems = alerts)
+        _uiState.update { state ->
+            state.copy(alertMap = alerts)
         }
     }
 
-    fun onAction(action: AlertsAction) {
-        when (action) {
-            AlertsAction.OnMarkAllAsReadClick -> onMarkAllAsReadClick()
-            is AlertsAction.OnAlertItemClick -> onAlertItemClick(action.item)
+    fun onEvent(event: AlertsState.Event) {
+        when (event) {
+            AlertsState.OnMarkAllAsReadClick -> onMarkAllAsReadClick()
+            is AlertsState.OnAlertItemClick -> onAlertItemClick(event.item)
+            AlertsState.NavigateToPostScreen -> {}
+            AlertsState.NavigateToProfileScreen -> {}
         }
     }
 
-    private fun onAlertItemClick(
-        item: AlertItem,
-    ) {
-        _state.value = state.value.copy(
-            alertItems = state.value.alertItems.toMutableMap().apply {
-                compute(item.section) { _, list ->
-                    list?.toMutableList()?.map { listItem ->
-                        if (listItem.id == item.id) listItem.copy(isRead = true) else listItem
-                    }
-                }
+    fun onEventHandled(event: AlertsState.Event?) {
+        _uiState.update { state ->
+            if (state.event == event) {
+                state.copy(
+                    event = null,
+                )
+            } else {
+                state
             }
-        )
+        }
+    }
+
+    private fun onAlertItemClick(item: AlertItem) {
         viewModelScope.launch {
-            _navEvent.emit(
-                if (item.type == AlertItemType.BIRTHDAY) AlertsNavEvent.OpenProfile else AlertsNavEvent.OpenPost
-            )
+            _uiState.update { state ->
+                val items =
+                    state.alertMap.mutate { map ->
+                        map.compute(item.section) { _, value ->
+                            value?.mutate { alertList ->
+                                alertList.map { listItem ->
+                                    if (listItem.id == item.id) {
+                                        listItem.copy(isRead = true)
+                                    } else {
+                                        listItem
+                                    }
+                                }
+                            }
+                        }
+                    }
+                val event =
+                    if (item.type == AlertItem.Type.Birthday) {
+                        AlertsState.NavigateToProfileScreen
+                    } else {
+                        AlertsState.NavigateToPostScreen
+                    }
+                state.copy(
+                    alertMap = items,
+                    event = event,
+                )
+            }
         }
     }
 
     private fun onMarkAllAsReadClick() {
-        _state.value = state.value.copy(
-            alertItems = state.value.alertItems.toMutableMap().apply {
-                forEach { (section, _) ->
-                    compute(section) {_, list ->
-                        list?.toMutableList()?.map { listItem -> listItem.copy(isRead = true) }
+        _uiState.update { state ->
+            val items =
+                state.alertMap.mutate { map ->
+                    map.forEach { (_, value) ->
+                        value.mutate { alertList ->
+                            alertList.map { listItem ->
+                                listItem.copy(isRead = true)
+                            }
+                        }
                     }
                 }
-            },
-        )
+            state.copy(
+                alertMap = items,
+            )
+        }
     }
 }

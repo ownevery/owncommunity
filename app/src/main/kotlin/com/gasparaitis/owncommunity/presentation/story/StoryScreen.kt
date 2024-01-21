@@ -24,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,8 +42,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gasparaitis.owncommunity.domain.shared.profile.model.Profile
 import com.gasparaitis.owncommunity.domain.shared.story.model.Story
+import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.StoryScreenDestination
 import com.gasparaitis.owncommunity.presentation.shared.composables.story.StoryProfileImage
 import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableFollowerCount
@@ -59,6 +60,7 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.popUpTo
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
@@ -68,25 +70,49 @@ fun StoryScreen(
     navigator: DestinationsNavigator,
     viewModel: StoryViewModel = hiltViewModel(),
 ) {
-    val state = viewModel.state.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     StoryContent(
-        state = state.value,
-        onAction = viewModel::onAction,
+        state = state,
+        onAction = viewModel::onEvent,
     )
-    LaunchedEffect(Unit) {
-        viewModel.navEvent.collect {
-            navigator.navigate(it.destination) {
-                popUpTo(StoryScreenDestination) { saveState = true }
+    StoryEventHandler(
+        event = state.event,
+        onEventHandled = viewModel::onEventHandled,
+        navigator = navigator,
+    )
+}
+
+@Composable
+private fun StoryEventHandler(
+    event: StoryState.Event?,
+    onEventHandled: (StoryState.Event?) -> Unit,
+    navigator: DestinationsNavigator,
+) {
+    LaunchedEffect(event) {
+        when (event) {
+            StoryState.NavigateToProfileScreen -> {
+                navigator.navigate(ProfileScreenDestination) {
+                    popUpTo(StoryScreenDestination) { saveState = true }
+                }
             }
+            is StoryState.OnProfileClick -> {}
+            is StoryState.OnStoryGoBack -> {}
+            is StoryState.OnStoryGoForward -> {}
+            StoryState.OnStoryReplyBarClick -> {}
+            is StoryState.OnStoryReplyQueryChange -> {}
+            StoryState.OnStoryReplySend -> {}
+            is StoryState.OnTabSelected -> {}
+            null -> {}
         }
+        onEventHandled(event)
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun StoryContent(
+private fun StoryContent(
     state: StoryState,
-    onAction: (StoryAction) -> Unit,
+    onAction: (StoryState.Event) -> Unit,
 ) {
     val pagerState = rememberPagerState { state.stories.size }
     Box(
@@ -96,9 +122,17 @@ fun StoryContent(
             stories = state.stories,
             pagerState = pagerState,
             onPageSelected = {},
-            onProfileClick = { onAction(StoryAction.OnProfileClick(it)) },
-            onBack = { storyIndex, storyItemIndex -> onAction(StoryAction.OnStoryGoBack(storyIndex, storyItemIndex)) },
-            onForward = { storyIndex, storyItemIndex -> onAction(StoryAction.OnStoryGoForward(storyIndex, storyItemIndex)) },
+            onProfileClick = { onAction(StoryState.OnProfileClick(it)) },
+            onBack = {
+                    storyIndex,
+                    storyItemIndex ->
+                onAction(StoryState.OnStoryGoBack(storyIndex, storyItemIndex))
+            },
+            onForward = {
+                    storyIndex,
+                    storyItemIndex ->
+                onAction(StoryState.OnStoryGoForward(storyIndex, storyItemIndex))
+            },
         )
     }
 }
@@ -106,7 +140,7 @@ fun StoryContent(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun StoryHorizontalPager(
-    stories: List<Story>,
+    stories: PersistentList<Story>,
     pagerState: PagerState,
     onPageSelected: (Int) -> Unit,
     onProfileClick: (Profile) -> Unit,
@@ -119,13 +153,14 @@ private fun StoryHorizontalPager(
         beyondBoundsPageCount = 2,
     ) { index ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .pagerCubeTransition(
-                    pagerState = pagerState,
-                    index = index
-                )
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .pagerCubeTransition(
+                        pagerState = pagerState,
+                        index = index,
+                    ),
         ) {
             StoryView(
                 story = stories[index],
@@ -154,16 +189,17 @@ private fun StoryView(
     var index by remember { mutableIntStateOf(0) }
     var isPaused by remember { mutableStateOf(false) }
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         StoryTopGradient(
             modifier = Modifier.zIndex(2f),
         )
         Column(
-            modifier = Modifier
-                .zIndex(3f)
-                .padding(top = 8.dp)
-                .padding(horizontal = 24.dp)
+            modifier =
+                Modifier
+                    .zIndex(3f)
+                    .padding(top = 8.dp)
+                    .padding(horizontal = 24.dp),
         ) {
             LinearIndicatorRow(
                 story = story,
@@ -191,23 +227,23 @@ private fun StoryView(
                 index = index.inc().coerceIn(0, story.storyEntries.size.dec())
                 Log.d("justas", "onSecondHalfTap")
             },
-            drawable = ContextCompat.getDrawable(
-                LocalContext.current,
-                story.storyEntries[index].drawableResId
-            )!!
+            drawable =
+                ContextCompat.getDrawable(
+                    LocalContext.current,
+                    story.storyEntries[index].drawableResId,
+                )!!,
         )
     }
 }
 
 @Composable
-fun StoryTopGradient(
-    modifier: Modifier = Modifier,
-) {
+fun StoryTopGradient(modifier: Modifier = Modifier,) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(brush = slightTopDarkGradientBrush())
-            .then(modifier)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(brush = slightTopDarkGradientBrush())
+                .then(modifier),
     )
 }
 
@@ -219,36 +255,38 @@ private fun StoryViewItem(
     onSecondHalfTap: () -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .storyPointerInput(
-                onFirstHalfTap = onFirstHalfTap,
-                onSecondHalfTap = onSecondHalfTap,
-                onHold = onHold,
-            )
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .storyPointerInput(
+                    onFirstHalfTap = onFirstHalfTap,
+                    onSecondHalfTap = onSecondHalfTap,
+                    onHold = onHold,
+                ),
     ) {
         StoryViewItemBackgroundBox(
             modifier = Modifier.zIndex(0f),
-            drawable = drawable
+            drawable = drawable,
         )
         StoryImage(
             modifier = Modifier.zIndex(1f),
-            drawable = drawable
+            drawable = drawable,
         )
     }
 }
 
 @Composable
 fun StoryProfileRow(
-    modifier: Modifier = Modifier,
     story: Story,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = Modifier
-            .padding(top = 12.dp)
-            .then(modifier)
-            .noRippleClickable { onClick() },
+        modifier =
+            Modifier
+                .padding(top = 12.dp)
+                .then(modifier)
+                .noRippleClickable { onClick() },
         verticalAlignment = Alignment.Top,
     ) {
         StoryProfileImage(
@@ -261,18 +299,20 @@ fun StoryProfileRow(
         ) {
             Text(
                 text = story.profile.displayName,
-                style = TextStyles.body.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = Colors.SocialWhite,
-                    lineHeight = 16.sp,
-                ),
+                style =
+                    TextStyles.body.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Colors.SocialWhite,
+                        lineHeight = 16.sp,
+                    ),
             )
             Text(
                 text = story.profile.followerCount.humanReadableFollowerCount,
-                style = TextStyles.secondary.copy(
-                    color = Colors.SocialWhite,
-                    lineHeight = 16.sp,
-                ),
+                style =
+                    TextStyles.secondary.copy(
+                        color = Colors.SocialWhite,
+                        lineHeight = 16.sp,
+                    ),
             )
         }
     }
@@ -280,28 +320,30 @@ fun StoryProfileRow(
 
 @Composable
 private fun StoryImage(
-    modifier: Modifier = Modifier,
     drawable: Drawable,
+    modifier: Modifier = Modifier,
 ) {
     Image(
-        modifier = Modifier
-            .fillMaxSize()
-            .then(modifier),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .then(modifier),
         painter = rememberDrawablePainter(drawable = drawable),
-        contentDescription = "Story image"
+        contentDescription = "Story image",
     )
 }
 
 @Composable
 private fun StoryViewItemBackgroundBox(
-    modifier: Modifier = Modifier,
     drawable: Drawable,
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(brush = drawable.verticalBackgroundGradientBrush)
-            .then(modifier)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(brush = drawable.verticalBackgroundGradientBrush)
+                .then(modifier),
     )
 }
 
@@ -311,9 +353,13 @@ fun LinearIndicatorRow(
     currentIndex: Int,
     onAnimationEnd: () -> Unit,
     isPaused: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .then(modifier),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         repeat(story.storyEntries.size) { index ->
@@ -339,25 +385,35 @@ private fun LinearIndicator(
 ) {
     val progress = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
+
     fun launchAnimation() {
         scope.launch {
             progress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(
-                    durationMillis = durationMillis,
-                    delayMillis = 0,
-                    easing = LinearEasing,
-                ),
+                animationSpec =
+                    tween(
+                        durationMillis = durationMillis,
+                        delayMillis = 0,
+                        easing = LinearEasing,
+                    ),
             )
         }
     }
     LinearProgressIndicator(
         backgroundColor = Colors.DarkBlack,
         color = Colors.PureWhite,
-        modifier = modifier
-            .padding(top = 12.dp, bottom = 12.dp)
-            .clip(RoundedCornerShape(12.dp)),
-        progress = if (isCompleted) 1.0f else if (!isActive) 0.0f else progress.value,
+        modifier =
+            modifier
+                .padding(top = 12.dp, bottom = 12.dp)
+                .clip(RoundedCornerShape(12.dp)),
+        progress =
+            if (isCompleted) {
+                1.0f
+            } else if (!isActive) {
+                0.0f
+            } else {
+                progress.value
+            },
     )
     LaunchedEffect(key1 = isActive) {
         if (isActive && isCompleted) {

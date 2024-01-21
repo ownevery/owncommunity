@@ -18,24 +18,26 @@ import androidx.compose.ui.unit.Dp
 fun Modifier.customTabIndicatorOffset(
     currentTabPosition: TabPosition,
     tabWidth: Dp
-): Modifier = composed(
-    inspectorInfo = debugInspectorInfo {
-        name = "customTabIndicatorOffset"
-        value = currentTabPosition
+): Modifier =
+    composed(
+        inspectorInfo =
+            debugInspectorInfo {
+                name = "customTabIndicatorOffset"
+                value = currentTabPosition
+            },
+    ) {
+        val currentTabWidth by animateDpAsState(
+            targetValue = tabWidth,
+            animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing),
+            label = "current.tab.width",
+        )
+        val indicatorOffset by animateDpAsState(
+            targetValue = ((currentTabPosition.left + currentTabPosition.right - tabWidth) / 2),
+            animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing),
+            label = "indicator.offset",
+        )
+        fillMaxWidth()
+            .wrapContentSize(Alignment.BottomStart)
+            .offset(x = indicatorOffset)
+            .width(currentTabWidth)
     }
-) {
-    val currentTabWidth by animateDpAsState(
-        targetValue = tabWidth,
-        animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing),
-        label = "current.tab.width"
-    )
-    val indicatorOffset by animateDpAsState(
-        targetValue = ((currentTabPosition.left + currentTabPosition.right - tabWidth) / 2),
-        animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing),
-        label = "indicator.offset"
-    )
-    fillMaxWidth()
-        .wrapContentSize(Alignment.BottomStart)
-        .offset(x = indicatorOffset)
-        .width(currentTabWidth)
-}

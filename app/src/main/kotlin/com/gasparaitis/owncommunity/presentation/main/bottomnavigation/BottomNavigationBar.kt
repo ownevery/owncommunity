@@ -1,4 +1,4 @@
-package com.gasparaitis.owncommunity.presentation.main
+package com.gasparaitis.owncommunity.presentation.main.bottomnavigation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
@@ -23,14 +23,18 @@ import com.ramcosta.composedestinations.utils.currentDestinationAsState
 @Composable
 fun BottomNavigationBar(
     navController: NavController,
-    onHomeDestinationRepeatClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    onHomeDestinationRepeatClick: () -> Unit = {},
 ) {
     val currentDestination = navController.currentDestinationAsState()
     NavigationBar(
-        modifier = Modifier.height(64.dp),
+        modifier =
+            Modifier
+                .height(64.dp)
+                .then(modifier),
         containerColor = Colors.PureBlack,
     ) {
-        BottomNavigationDestination.values().forEach { destination ->
+        BottomNavigationDestination.entries.forEach { destination ->
             NavigationBarItem(
                 selected = currentDestination.value == destination.direction,
                 onClick = {
@@ -62,18 +66,19 @@ fun BottomNavigationBar(
                         )
                     }
                 },
-                colors = if (destination.direction == CreateScreenDestination) {
-                    NavigationBarItemDefaults.colors(
-                        selectedIconColor = Colors.Transparent,
-                        indicatorColor = Colors.Transparent,
-                    )
-                } else {
-                    NavigationBarItemDefaults.colors(
-                        selectedIconColor = Colors.PureWhite,
-                        unselectedIconColor = Colors.LightGray,
-                        indicatorColor = Colors.Transparent,
-                    )
-                },
+                colors =
+                    if (destination.direction == CreateScreenDestination) {
+                        NavigationBarItemDefaults.colors(
+                            selectedIconColor = Colors.Transparent,
+                            indicatorColor = Colors.Transparent,
+                        )
+                    } else {
+                        NavigationBarItemDefaults.colors(
+                            selectedIconColor = Colors.PureWhite,
+                            unselectedIconColor = Colors.LightGray,
+                            indicatorColor = Colors.Transparent,
+                        )
+                    },
             )
         }
     }

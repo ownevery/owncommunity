@@ -38,40 +38,46 @@ import androidx.compose.ui.unit.sp
 import com.gasparaitis.owncommunity.R
 import com.gasparaitis.owncommunity.domain.shared.post.model.Post
 import com.gasparaitis.owncommunity.domain.shared.post.model.PostActionItem
-import com.gasparaitis.owncommunity.domain.shared.post.model.PostType
 import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableTimeAgo
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
 import com.gasparaitis.owncommunity.presentation.utils.theme.TextStyles
+import kotlinx.collections.immutable.PersistentList
 
 @Composable
 fun PostView(
     item: Post,
-    onAction: (PostAction) -> Unit,
+    onAction: (Post.Event) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Divider(
-        modifier = Modifier.fillMaxWidth(),
-        thickness = 1.dp,
-        color = Color.DarkGray,
-    )
     Column(
-        modifier = Modifier
-            .padding(top = 24.dp),
+        modifier = Modifier.then(modifier),
     ) {
-        PostTopRow(
-            profileImage = painterResource(id = item.profileImage),
-            authorName = item.authorName,
-            postedTimeAgo = item.postedAtTimestamp.humanReadableTimeAgo
-        ) { onAction(PostAction.OnAuthorClick(item)) }
-        PostBody(
-            item = item,
-            onClick = { onAction(PostAction.OnBodyClick(item)) },
+        Divider(
+            modifier = Modifier.fillMaxWidth(),
+            thickness = 1.dp,
+            color = Color.DarkGray,
         )
-        PostBottomRow(
-            item = item,
-            onAction = onAction,
-        )
-        Spacer(Modifier.height(16.dp))
+        Column(
+            modifier =
+                Modifier
+                    .padding(top = 24.dp),
+        ) {
+            PostTopRow(
+                profileImage = painterResource(id = item.profileImage),
+                authorName = item.authorName,
+                postedTimeAgo = item.postedAtTimestamp.humanReadableTimeAgo,
+            ) { onAction(Post.OnAuthorClick(item)) }
+            PostBody(
+                item = item,
+                onClick = { onAction(Post.OnBodyClick(item)) },
+            )
+            PostBottomRow(
+                item = item,
+                onAction = onAction,
+            )
+            Spacer(Modifier.height(16.dp))
+        }
     }
 }
 
@@ -85,9 +91,9 @@ private fun PostBody(
     ) {
         PostBodyText(
             text = item.bodyText,
-            singleLine = item.type !is PostType.TextOnly,
+            singleLine = item.type !is Post.Type.TextOnly,
         )
-        if (item.type is PostType.Images) {
+        if (item.type is Post.Type.Images) {
             PostImageView(images = item.type.images)
         }
     }
@@ -95,7 +101,7 @@ private fun PostBody(
 
 @Composable
 private fun PostImageView(
-    images: List<Int>,
+    images: PersistentList<Int>,
     itemWidth: Dp = 320.dp,
     itemHeight: Dp = 180.dp,
 ) {
@@ -123,10 +129,11 @@ private fun PostImage(
     modifier: Modifier = Modifier,
 ) {
     Image(
-        modifier = Modifier
-            .then(modifier)
-            .size(width = width, height = height)
-            .clip(RoundedCornerShape(16.dp)),
+        modifier =
+            Modifier
+                .then(modifier)
+                .size(width = width, height = height)
+                .clip(RoundedCornerShape(16.dp)),
         painter = painterResource(id = image),
         contentScale = ContentScale.FillBounds,
         contentDescription = "Post image",
@@ -140,10 +147,11 @@ private fun PostSingleImage(
     itemHeight: Dp,
 ) {
     PostImage(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp)
-            .padding(horizontal = 24.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+                .padding(horizontal = 24.dp),
         image = image,
         width = itemWidth,
         height = itemHeight,
@@ -153,17 +161,18 @@ private fun PostSingleImage(
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 private fun PostImagePager(
-    images: List<Int>,
+    images: PersistentList<Int>,
     itemWidth: Dp,
     itemHeight: Dp,
 ) {
     val state = rememberPagerState { images.size }
     Column {
         HorizontalPager(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-                .padding(start = 24.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .padding(start = 24.dp),
             state = state,
             pageSpacing = 12.dp,
             pageSize = PageSize.Fixed(itemWidth),
@@ -188,18 +197,22 @@ private fun PostImagePagerIndicator(
     currentPage: Int,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp),
         horizontalArrangement = Arrangement.Center,
     ) {
         repeat(pageCount) { index ->
             Box(
-                modifier = Modifier
-                    .padding(end = 10.dp)
-                    .clip(CircleShape)
-                    .background(if (currentPage == index) Colors.SocialPink else Colors.LightGray)
-                    .size(6.dp),
+                modifier =
+                    Modifier
+                        .padding(end = 10.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (currentPage == index) Colors.SocialPink else Colors.LightGray,
+                        )
+                        .size(6.dp),
             )
         }
     }
@@ -213,13 +226,14 @@ private fun PostTopRow(
     onAuthorClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(
-            modifier = Modifier.noRippleClickable(onAuthorClick)
+            modifier = Modifier.noRippleClickable(onAuthorClick),
         ) {
             PostTopRowProfileImage(
                 image = profileImage,
@@ -235,13 +249,12 @@ private fun PostTopRow(
 }
 
 @Composable
-private fun PostTopRowProfileImage(
-    image: Painter,
-) {
+private fun PostTopRowProfileImage(image: Painter) {
     Image(
-        modifier = Modifier
-            .size(40.dp)
-            .clip(CircleShape),
+        modifier =
+            Modifier
+                .size(40.dp)
+                .clip(CircleShape),
         painter = image,
         contentScale = ContentScale.Crop,
         contentDescription = "Profile image",
@@ -284,9 +297,10 @@ private fun PostBodyText(
     singleLine: Boolean = false,
 ) {
     Text(
-        modifier = Modifier
-            .padding(top = 16.dp)
-            .padding(horizontal = 24.dp),
+        modifier =
+            Modifier
+                .padding(top = 16.dp)
+                .padding(horizontal = 24.dp),
         text = text,
         style = TextStyles.secondary,
         lineHeight = 24.sp,
@@ -298,13 +312,14 @@ private fun PostBodyText(
 @Composable
 private fun PostBottomRow(
     item: Post,
-    onAction: (PostAction) -> Unit,
+    onAction: (Post.Event) -> Unit,
 ) {
     val actions = PostActionItem.actions(item)
     Row(
-        modifier = Modifier
-            .padding(top = 18.dp)
-            .padding(horizontal = 24.dp),
+        modifier =
+            Modifier
+                .padding(top = 18.dp)
+                .padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         repeat(actions.size) { index ->
@@ -318,7 +333,7 @@ private fun PostBottomRow(
         }
         Spacer(Modifier.weight(1f))
         PostBookmarkIconButton(
-            onClick = { onAction(PostAction.OnBookmarkClick(item)) },
+            onClick = { onAction(Post.OnBookmarkClick(item)) },
             isActive = item.isBookmarked,
         )
     }

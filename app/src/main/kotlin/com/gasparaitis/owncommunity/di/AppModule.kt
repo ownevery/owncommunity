@@ -20,6 +20,7 @@ object AppModule {
 
     @Provides
     fun providesProfileUseCase() = ProfileUseCase()
+
     @Provides
     fun providesAlertsUseCase() = AlertsUseCase()
 }

@@ -36,7 +36,6 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -58,11 +57,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gasparaitis.owncommunity.R
 import com.gasparaitis.owncommunity.domain.shared.post.model.Post
 import com.gasparaitis.owncommunity.domain.shared.profile.model.Profile
+import com.gasparaitis.owncommunity.presentation.destinations.PostScreenDestination
+import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.SearchScreenDestination
-import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostAction
 import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostView
 import com.gasparaitis.owncommunity.presentation.shared.composables.search.CustomTextField
 import com.gasparaitis.owncommunity.presentation.utils.extensions.customTabIndicatorOffset
@@ -73,6 +74,8 @@ import com.gasparaitis.owncommunity.presentation.utils.theme.TextStyles
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.popUpTo
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
@@ -82,20 +85,52 @@ fun SearchScreen(
     navigator: DestinationsNavigator,
     viewModel: SearchViewModel = hiltViewModel(),
 ) {
-    val state = viewModel.state.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     SearchContent(
-        state = state.value,
-        onAction = viewModel::onAction,
+        state = state,
+        onAction = viewModel::onEvent,
     )
-    LaunchedEffect(Unit) {
-        viewModel.navEvent.collect {
-            if (it is SearchNavEvent.ScrollUp) {
-                return@collect
+    SearchEventHandler(
+        event = state.event,
+        onEventHandled = viewModel::onEventHandled,
+        navigator = navigator,
+    )
+}
+
+@Composable
+private fun SearchEventHandler(
+    event: SearchState.Event?,
+    onEventHandled: (SearchState.Event?) -> Unit,
+    navigator: DestinationsNavigator,
+) {
+    LaunchedEffect(event) {
+        when (event) {
+            SearchState.NavigateToPostAuthorProfileScreen -> {
+                navigator.navigate(ProfileScreenDestination) {
+                    popUpTo(SearchScreenDestination) { saveState = true }
+                }
             }
-            navigator.navigate(it.destination) {
-                popUpTo(SearchScreenDestination) { saveState = true }
+            SearchState.NavigateToPostScreen -> {
+                navigator.navigate(PostScreenDestination) {
+                    popUpTo(SearchScreenDestination) { saveState = true }
+                }
             }
+            SearchState.NavigateToProfileScreen -> {
+                navigator.navigate(ProfileScreenDestination) {
+                    popUpTo(SearchScreenDestination) { saveState = true }
+                }
+            }
+            is SearchState.OnPostEvent -> {}
+            is SearchState.OnProfileBodyClick -> {}
+            is SearchState.OnProfileFollowButtonClick -> {}
+            SearchState.OnSearchBarClick -> {}
+            is SearchState.OnSearchBarQueryChange -> {}
+            SearchState.OnSearchIconRepeatClick -> {}
+            is SearchState.OnTabSelected -> {}
+            SearchState.ScrollUp -> {}
+            null -> {}
         }
+        onEventHandled(event)
     }
 }
 
@@ -103,28 +138,30 @@ fun SearchScreen(
 @Composable
 private fun SearchContent(
     state: SearchState,
-    onAction: (SearchAction) -> Unit,
+    onAction: (SearchState.Event) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    val tabs = listOf(
-        stringResource(R.string.tab_title_trending),
-        stringResource(R.string.tab_title_latest),
-        stringResource(R.string.tab_title_people),
-    )
-    val pagerState = rememberPagerState(
-        initialPage = state.selectedTabIndex,
-    ) { tabs.size }
+    val tabs =
+        persistentListOf(
+            stringResource(R.string.tab_title_trending),
+            stringResource(R.string.tab_title_latest),
+            stringResource(R.string.tab_title_people),
+        )
+    val pagerState =
+        rememberPagerState(
+            initialPage = state.selectedTabIndex,
+        ) { tabs.size }
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBarView(
             searchText = state.searchText,
-            onSearchBarClick = { onAction(SearchAction.OnSearchBarClick) },
-            onSearchQueryChange = { onAction(SearchAction.OnSearchBarQueryChange(it)) },
+            onSearchBarClick = { onAction(SearchState.OnSearchBarClick) },
+            onSearchQueryChange = { onAction(SearchState.OnSearchBarQueryChange(it)) },
         )
         TabView(
             selectedTabIndex = state.selectedTabIndex,
             onTabSelected = { tabIndex ->
                 scope.launch {
-                    onAction(SearchAction.OnTabSelected(tabIndex))
+                    onAction(SearchState.OnTabSelected(tabIndex))
                     pagerState.animateScrollToPage(tabIndex)
                 }
             },
@@ -133,10 +170,10 @@ private fun SearchContent(
         SearchHorizontalPager(
             state = state,
             pagerState = pagerState,
-            onTabSelected = { onAction(SearchAction.OnTabSelected(it)) },
-            onProfileClick = { onAction(SearchAction.OnProfileBodyClick(it)) },
-            onFollowButtonClick = { onAction(SearchAction.OnProfileFollowButtonClick(it)) },
-            onPostAction = { onAction(SearchAction.OnPostAction(it)) },
+            onTabSelected = { onAction(SearchState.OnTabSelected(it)) },
+            onProfileClick = { onAction(SearchState.OnProfileBodyClick(it)) },
+            onFollowButtonClick = { onAction(SearchState.OnProfileFollowButtonClick(it)) },
+            onPostAction = { onAction(SearchState.OnPostEvent(it)) },
         )
     }
 }
@@ -149,31 +186,31 @@ private fun SearchHorizontalPager(
     onTabSelected: (Int) -> Unit,
     onProfileClick: (Profile) -> Unit,
     onFollowButtonClick: (Profile) -> Unit,
-    onPostAction: (PostAction) -> Unit,
+    onPostAction: (Post.Event) -> Unit,
 ) {
     HorizontalPager(
         modifier = Modifier.fillMaxSize(),
         state = pagerState,
-        beyondBoundsPageCount = 2
+        beyondBoundsPageCount = 2,
     ) { index ->
         when (index) {
             0 -> {
                 PostListView(
                     posts = state.trendingPosts,
-                    onPostAction = onPostAction,
+                    onPostEvent = onPostAction,
                 )
             }
             1 -> {
                 PostListView(
                     posts = state.latestPosts,
-                    onPostAction = onPostAction,
+                    onPostEvent = onPostAction,
                 )
             }
             2 -> {
                 PeopleView(
                     profiles = state.profiles,
                     onProfileClick = onProfileClick,
-                    onFollowButtonClick = onFollowButtonClick
+                    onFollowButtonClick = onFollowButtonClick,
                 )
             }
         }
@@ -189,8 +226,8 @@ private fun SearchHorizontalPager(
 
 @Composable
 private fun PostListView(
-    posts: List<Post>,
-    onPostAction: (PostAction) -> Unit,
+    posts: PersistentList<Post>,
+    onPostEvent: (Post.Event) -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
     LazyColumn(
@@ -203,7 +240,7 @@ private fun PostListView(
         ) { index ->
             PostView(
                 item = posts[index],
-                onAction = onPostAction,
+                onAction = onPostEvent,
             )
         }
     }
@@ -211,7 +248,7 @@ private fun PostListView(
 
 @Composable
 private fun PeopleView(
-    profiles: List<Profile>,
+    profiles: PersistentList<Profile>,
     onProfileClick: (Profile) -> Unit,
     onFollowButtonClick: (Profile) -> Unit
 ) {
@@ -238,57 +275,69 @@ private fun ProfileView(
     profile: Profile,
     onProfileClick: () -> Unit,
     onFollowButtonClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Divider(
-        modifier = Modifier.fillMaxWidth(),
-        thickness = 1.dp,
-        color = Color.DarkGray,
-    )
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 18.dp)
-            .padding(top = 24.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .then(modifier),
     ) {
-        Row(
-            modifier = Modifier.noRippleClickable(onProfileClick)
-        ) {
-            Image(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape),
-                painter = painterResource(id = profile.profileImage),
-                contentScale = ContentScale.Crop,
-                contentDescription = "Profile image",
-            )
-            Column(
-                modifier = Modifier.padding(start = 8.dp),
-            ) {
-                Text(
-                    text = profile.displayName,
-                    style = TextStyles.body.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = Colors.SocialWhite,
-                        lineHeight = 16.sp,
-                    ),
-                )
-                Text(
-                    text = profile.followerCount.humanReadableFollowerCount,
-                    style = TextStyles.secondary.copy(
-                        color = Colors.SocialWhite,
-                        lineHeight = 16.sp,
-                    ),
-                )
-            }
-        }
-        Spacer(Modifier.weight(1f))
-        FollowButton(
-            isFollowed = profile.isFollowed,
-            onClick = onFollowButtonClick,
+        Divider(
+            modifier = Modifier.fillMaxWidth(),
+            thickness = 1.dp,
+            color = Color.DarkGray,
         )
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp)
+                    .padding(top = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(
+                modifier = Modifier.noRippleClickable(onProfileClick),
+            ) {
+                Image(
+                    modifier =
+                        Modifier
+                            .size(40.dp)
+                            .clip(CircleShape),
+                    painter = painterResource(id = profile.profileImage),
+                    contentScale = ContentScale.Crop,
+                    contentDescription = "Profile image",
+                )
+                Column(
+                    modifier = Modifier.padding(start = 8.dp),
+                ) {
+                    Text(
+                        text = profile.displayName,
+                        style =
+                            TextStyles.body.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Colors.SocialWhite,
+                                lineHeight = 16.sp,
+                            ),
+                    )
+                    Text(
+                        text = profile.followerCount.humanReadableFollowerCount,
+                        style =
+                            TextStyles.secondary.copy(
+                                color = Colors.SocialWhite,
+                                lineHeight = 16.sp,
+                            ),
+                    )
+                }
+            }
+            Spacer(Modifier.weight(1f))
+            FollowButton(
+                isFollowed = profile.isFollowed,
+                onClick = onFollowButtonClick,
+            )
+        }
+        Spacer(Modifier.height(16.dp))
     }
-    Spacer(Modifier.height(16.dp))
 }
 
 @Composable
@@ -300,44 +349,47 @@ private fun FollowButton(
         Button(
             modifier = Modifier.size(height = 28.dp, width = 96.dp),
             onClick = onClick,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Colors.SocialPink,
-                contentColor = Colors.PureWhite,
-            ),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = Colors.SocialPink,
+                    contentColor = Colors.PureWhite,
+                ),
             contentPadding = PaddingValues(),
         ) {
             Text(
                 text = stringResource(R.string.follow_button_follow),
-                style = TextStyles.secondary.copy(
-                    color = Colors.PureWhite,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 16.sp,
-                )
+                style =
+                    TextStyles.secondary.copy(
+                        color = Colors.PureWhite,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 16.sp,
+                    ),
             )
         }
     } else {
         Button(
             modifier = Modifier.size(height = 28.dp, width = 96.dp),
             onClick = onClick,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Colors.DarkBlack,
-                contentColor = Colors.PureWhite,
-            ),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = Colors.DarkBlack,
+                    contentColor = Colors.PureWhite,
+                ),
             border = BorderStroke(width = 1.dp, color = Colors.LightGray),
             contentPadding = PaddingValues(),
         ) {
             Text(
                 text = stringResource(R.string.follow_button_following),
-                style = TextStyles.secondary.copy(
-                    color = Colors.PureWhite,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 16.sp,
-                )
+                style =
+                    TextStyles.secondary.copy(
+                        color = Colors.PureWhite,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 16.sp,
+                    ),
             )
         }
     }
 }
-
 
 @Composable
 private fun SearchBarView(
@@ -349,19 +401,24 @@ private fun SearchBarView(
     val isVisible by remember { mutableStateOf(true) }
     AnimatedVisibility(
         visible = isVisible,
-        enter = fadeIn() + expandVertically(
-            animationSpec = tween(durationMillis),
-        ),
-        exit = fadeOut() + shrinkVertically(
-            animationSpec = tween(durationMillis),
-        ),
+        enter =
+            fadeIn() +
+                expandVertically(
+                    animationSpec = tween(durationMillis),
+                ),
+        exit =
+            fadeOut() +
+                shrinkVertically(
+                    animationSpec = tween(durationMillis),
+                ),
     ) {
         CustomTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp)
-                .padding(horizontal = 24.dp)
-                .height(48.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp)
+                    .padding(horizontal = 24.dp)
+                    .height(48.dp),
             value = searchText.text,
             onValueChange = onSearchQueryChange,
             onTextFieldClick = onSearchBarClick,
@@ -387,34 +444,37 @@ private fun SearchBarView(
 @Composable
 private fun TabView(
     selectedTabIndex: Int,
-    tabs: List<String>,
+    tabs: PersistentList<String>,
     onTabSelected: (Int) -> Unit
 ) {
     val density = LocalDensity.current
-    val tabWidths = remember {
-        val tabWidthStateList = mutableStateListOf<Dp>()
-        repeat(tabs.size) {
-            tabWidthStateList.add(0.dp)
+    val tabWidths =
+        remember {
+            val tabWidthStateList = mutableStateListOf<Dp>()
+            repeat(tabs.size) {
+                tabWidthStateList.add(0.dp)
+            }
+            tabWidthStateList
         }
-        tabWidthStateList
-    }
     TabRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 24.dp)
-            .padding(horizontal = 12.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp)
+                .padding(horizontal = 12.dp),
         selectedTabIndex = selectedTabIndex,
         divider = {},
         indicator = { tabPositions ->
             TabRowDefaults.Indicator(
-                modifier = Modifier.customTabIndicatorOffset(
-                    currentTabPosition = tabPositions[selectedTabIndex],
-                    tabWidth = tabWidths[selectedTabIndex]
-                ),
+                modifier =
+                    Modifier.customTabIndicatorOffset(
+                        currentTabPosition = tabPositions[selectedTabIndex],
+                        tabWidth = tabWidths[selectedTabIndex],
+                    ),
                 color = Colors.SocialBlue,
                 height = 4.dp,
             )
-        }
+        },
     ) {
         tabs.forEachIndexed { index, title ->
             Tab(
@@ -423,15 +483,21 @@ private fun TabView(
                 text = {
                     Text(
                         text = title,
-                        style = TextStyles.secondary.copy(
-                            fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal,
-                            lineHeight = 16.sp,
-                        ),
+                        style =
+                            TextStyles.secondary.copy(
+                                fontWeight =
+                                    if (selectedTabIndex == index) {
+                                        FontWeight.Bold
+                                    } else {
+                                        FontWeight.Normal
+                                    },
+                                lineHeight = 16.sp,
+                            ),
                         onTextLayout = { textLayoutResult ->
                             tabWidths[index] = with(density) { textLayoutResult.size.width.toDp() }
-                        }
+                        },
                     )
-                }
+                },
             )
         }
     }

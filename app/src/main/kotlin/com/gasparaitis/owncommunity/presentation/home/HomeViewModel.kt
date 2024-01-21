@@ -1,22 +1,18 @@
 package com.gasparaitis.owncommunity.presentation.home
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.gasparaitis.owncommunity.domain.alerts.usecase.AlertsUseCase
 import com.gasparaitis.owncommunity.domain.shared.post.model.Post
 import com.gasparaitis.owncommunity.domain.shared.post.usecase.PostUseCase
 import com.gasparaitis.owncommunity.domain.shared.story.model.Story
 import com.gasparaitis.owncommunity.domain.shared.story.usecase.StoryUseCase
-import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostAction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.collections.immutable.mutate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -24,11 +20,8 @@ class HomeViewModel @Inject constructor(
     private val postUseCase: PostUseCase,
     private val storyUseCase: StoryUseCase,
 ) : ViewModel() {
-    private val _state: MutableStateFlow<HomeState> = MutableStateFlow(HomeState.EMPTY)
-    val state: StateFlow<HomeState> = _state.asStateFlow()
-
-    private val _navEvent = MutableSharedFlow<HomeNavEvent>()
-    val navEvent = _navEvent.asSharedFlow()
+    private val _uiState: MutableStateFlow<HomeState> = MutableStateFlow(HomeState.EMPTY)
+    val uiState: StateFlow<HomeState> = _uiState.asStateFlow()
 
     init {
         onCreated()
@@ -38,7 +31,7 @@ class HomeViewModel @Inject constructor(
         val areAllAlertsRead = alertsUseCase.getAreAllItemsRead()
         val posts = postUseCase.getHomePosts()
         val stories = storyUseCase.getStories()
-        _state.update { state ->
+        _uiState.update { state ->
             state.copy(
                 areAllAlertsRead = areAllAlertsRead,
                 posts = posts,
@@ -47,100 +40,141 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun onAction(action: HomeAction) {
+    fun onEvent(action: HomeState.Event) {
         when (action) {
-            is HomeAction.OnStoryClick -> onStoryClick(action.item)
-            HomeAction.OnAlertIconClick -> onAlertIconClick()
-            is HomeAction.OnPostAction -> {
-                when (action.postAction) {
-                    is PostAction.OnAuthorClick -> onPostAuthorClick(action.postAction.item)
-                    is PostAction.OnBodyClick -> onPostBodyClick()
-                    is PostAction.OnBookmarkClick -> onPostBookmarkClick(action.postAction.item)
-                    is PostAction.OnCommentClick -> onPostCommentClick(action.postAction.item)
-                    is PostAction.OnLikeClick -> onPostLikeClick(action.postAction.item)
-                    is PostAction.OnShareClick -> onPostShareClick(action.postAction.item)
+            is HomeState.OnStoryClick -> onStoryClick(action.item)
+            HomeState.OnAlertIconClick -> onAlertIconClick()
+            is HomeState.OnPostEvent -> {
+                when (action.postEvent) {
+                    is Post.OnAuthorClick -> onPostAuthorClick(action.postEvent.item)
+                    is Post.OnBodyClick -> onPostBodyClick()
+                    is Post.OnBookmarkClick -> onPostBookmarkClick(action.postEvent.item)
+                    is Post.OnCommentClick -> onPostCommentClick(action.postEvent.item)
+                    is Post.OnLikeClick -> onPostLikeClick(action.postEvent.item)
+                    is Post.OnShareClick -> onPostShareClick(action.postEvent.item)
                 }
+            }
+            HomeState.NavigateToAlertListScreen,
+            HomeState.NavigateToPostAuthorProfileScreen,
+            HomeState.NavigateToPostScreen,
+            HomeState.NavigateToStoryListScreen -> {}
+        }
+    }
+
+    fun onEventHandled(event: HomeState.Event?) {
+        _uiState.update { state ->
+            if (state.event == event) {
+                state.copy(
+                    event = null,
+                )
+            } else {
+                state
             }
         }
     }
 
-    private fun onHomeIconRepeatClick() {
-        viewModelScope.launch {
-            _navEvent.emit(HomeNavEvent.ScrollUp)
-        }
-    }
-
     private fun onAlertIconClick() {
-        viewModelScope.launch {
-            _navEvent.emit(HomeNavEvent.OpenAlerts)
+        _uiState.update { state ->
+            state.copy(
+                event = HomeState.NavigateToAlertListScreen,
+            )
         }
     }
 
     private fun onStoryClick(story: Story) {
-        viewModelScope.launch {
-            _navEvent.emit(HomeNavEvent.OpenStory)
-            _state.value = _state.value.copy(
-                stories = _state.value.stories.map { storyItem ->
-                    if (storyItem.id == story.id) storyItem.copy(isRead = true) else storyItem
-                },
+        _uiState.update { state ->
+            val stories =
+                state.stories.mutate { storyList ->
+                    storyList.map { storyItem ->
+                        if (storyItem.id == story.id) {
+                            storyItem.copy(isRead = true)
+                        } else {
+                            storyItem
+                        }
+                    }
+                }
+            state.copy(
+                event = HomeState.NavigateToStoryListScreen,
+                stories = stories,
             )
         }
     }
 
     private fun onPostBodyClick() {
-        viewModelScope.launch {
-            _navEvent.emit(HomeNavEvent.OpenPost)
+        _uiState.update { state ->
+            state.copy(
+                event = HomeState.NavigateToPostScreen,
+            )
         }
     }
 
     private fun onPostAuthorClick(item: Post) {
-        viewModelScope.launch {
-            _navEvent.emit(HomeNavEvent.OpenPostAuthorProfile)
+        _uiState.update { state ->
+            state.copy(
+                event = HomeState.NavigateToPostAuthorProfileScreen,
+            )
         }
     }
 
     private fun onPostLikeClick(post: Post) =
         updateStateByItemId(
-            post = post.copy(
-                isLiked = post.isLiked.not(),
-                likeCount = if (post.isLiked) {
-                    post.likeCount.dec()
-                } else {
-                    post.likeCount.inc()
-                },
-            ),
+            post =
+                post.copy(
+                    isLiked = post.isLiked.not(),
+                    likeCount =
+                        if (post.isLiked) {
+                            post.likeCount.dec()
+                        } else {
+                            post.likeCount.inc()
+                        },
+                ),
         )
 
     private fun onPostCommentClick(post: Post) {
-        viewModelScope.launch {
-            _navEvent.emit(HomeNavEvent.OpenPost)
+        _uiState.update { state ->
+            state.copy(
+                event = HomeState.NavigateToPostScreen,
+            )
         }
     }
 
     private fun onPostShareClick(post: Post) =
         updateStateByItemId(
-            post = post.copy(
-                isShared = post.isShared.not(),
-                shareCount = if (post.isShared) {
-                    post.shareCount.dec()
-                } else {
-                    post.shareCount.inc()
-                },
-            ),
+            post =
+                post.copy(
+                    isShared = post.isShared.not(),
+                    shareCount =
+                        if (post.isShared) {
+                            post.shareCount.dec()
+                        } else {
+                            post.shareCount.inc()
+                        },
+                ),
         )
 
     private fun onPostBookmarkClick(post: Post) =
         updateStateByItemId(
-            post = post.copy(
-                isBookmarked = post.isBookmarked.not(),
-            ),
+            post =
+                post.copy(
+                    isBookmarked = post.isBookmarked.not(),
+                ),
         )
 
     private fun updateStateByItemId(post: Post) {
-        _state.value = _state.value.copy(
-            posts = _state.value.posts.map { item ->
-                if (item.id == post.id) post else item
-            },
-        )
+        _uiState.update { state ->
+            val posts =
+                state.posts.mutate { postList ->
+                    postList.map { postItem ->
+                        if (postItem.id == post.id) {
+                            post
+                        } else {
+                            postItem
+                        }
+                    }
+                }
+            state.copy(
+                posts = posts,
+            )
+        }
     }
 }

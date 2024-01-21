@@ -27,5 +27,7 @@ jobs:
       env:
         DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
       run: echo $DATA > /home/runner/work/owncommunity/owncommunity/app/google-services.json
-    - name: Build and run tests
+    - name: Run unit tests
       run: ./gradlew testDebug
+    - name: Run ktlint
+      run: ./gradlew --continue ktlintFormat

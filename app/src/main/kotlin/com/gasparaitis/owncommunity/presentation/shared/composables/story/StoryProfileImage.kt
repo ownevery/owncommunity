@@ -17,25 +17,28 @@ import com.gasparaitis.owncommunity.presentation.utils.theme.defaultGradientBrus
 
 @Composable
 fun StoryProfileImage(
-    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     image: Painter,
     shouldShowBorder: Boolean,
+    modifier: Modifier = Modifier,
 ) {
-    val gradientBorder = Modifier
-        .border(width = 2.dp, brush = defaultGradientBrush(), shape = CircleShape)
-    val blackBorder = Modifier
-        .border(width = 2.dp, color = Colors.PureBlack, shape = CircleShape)
+    val gradientBorder =
+        Modifier
+            .border(width = 2.dp, brush = defaultGradientBrush(), shape = CircleShape)
+    val blackBorder =
+        Modifier
+            .border(width = 2.dp, color = Colors.PureBlack, shape = CircleShape)
     Image(
-        modifier = Modifier
-            .padding(bottom = 8.dp)
-            .then(if (shouldShowBorder) gradientBorder else Modifier)
-            .padding(2.dp)
-            .size(40.dp)
-            .clip(CircleShape)
-            .then(if (shouldShowBorder) blackBorder else Modifier)
-            .then(modifier)
-            .noRippleClickable(onClick),
+        modifier =
+            Modifier
+                .padding(bottom = 8.dp)
+                .then(if (shouldShowBorder) gradientBorder else Modifier)
+                .padding(2.dp)
+                .size(40.dp)
+                .clip(CircleShape)
+                .then(if (shouldShowBorder) blackBorder else Modifier)
+                .then(modifier)
+                .noRippleClickable(onClick),
         contentScale = ContentScale.Crop,
         painter = image,
         contentDescription = "Story profile image",

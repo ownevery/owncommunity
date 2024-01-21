@@ -1,27 +1,21 @@
 package com.gasparaitis.owncommunity.presentation.story
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.gasparaitis.owncommunity.domain.shared.story.usecase.StoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.collections.immutable.mutate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 @HiltViewModel
 class StoryViewModel @Inject constructor(
     private val storyUseCase: StoryUseCase,
 ) : ViewModel() {
-    private val _state: MutableStateFlow<StoryState> = MutableStateFlow(StoryState.EMPTY)
-    val state: StateFlow<StoryState> = _state.asStateFlow()
-
-    private val _navEvent = MutableSharedFlow<StoryNavEvent>()
-    val navEvent = _navEvent.asSharedFlow()
+    private val _uiState: MutableStateFlow<StoryState> = MutableStateFlow(StoryState.EMPTY)
+    val uiState: StateFlow<StoryState> = _uiState.asStateFlow()
 
     init {
         onCreated()
@@ -29,7 +23,7 @@ class StoryViewModel @Inject constructor(
 
     private fun onCreated() {
         val stories = storyUseCase.getStories()
-        _state.update { state ->
+        _uiState.update { state ->
             state.copy(
                 selectedTabIndex = state.selectedTabIndex,
                 stories = stories,
@@ -37,65 +31,104 @@ class StoryViewModel @Inject constructor(
         }
     }
 
-    fun onAction(action: StoryAction) {
-        when (action) {
-            is StoryAction.OnProfileClick -> onProfileClick()
-            StoryAction.OnStoryReplyBarClick -> onStoryReplyBarClick()
-            is StoryAction.OnStoryReplyQueryChange -> onStoryReplyQueryChange(action.query)
-            StoryAction.OnStoryReplySend -> onStoryReplySend()
-            is StoryAction.OnTabSelected -> onTabSelected(action.index)
-            is StoryAction.OnStoryGoBack -> onStoryGoBack(action.storyIndex, action.storyItemIndex)
-            is StoryAction.OnStoryGoForward -> onStoryGoForward(action.storyIndex, action.storyItemIndex)
+    fun onEvent(event: StoryState.Event) {
+        when (event) {
+            is StoryState.OnProfileClick -> onProfileClick()
+            StoryState.OnStoryReplyBarClick -> onStoryReplyBarClick()
+            is StoryState.OnStoryReplyQueryChange -> onStoryReplyQueryChange(event.query)
+            StoryState.OnStoryReplySend -> onStoryReplySend()
+            is StoryState.OnTabSelected -> onTabSelected(event.index)
+            is StoryState.OnStoryGoBack -> onStoryGoBack(event.storyIndex, event.storyItemIndex)
+            is StoryState.OnStoryGoForward ->
+                onStoryGoForward(
+                    event.storyIndex,
+                    event.storyItemIndex,
+                )
+            StoryState.NavigateToProfileScreen -> {}
         }
     }
 
-    private fun onStoryGoBack(storyIndex: Int, storyEntryIndex: Int) {
-        _state.update { state ->
-            state.copy(
-                stories = state.stories.mapIndexed { index, story ->
-                    if (index == storyIndex) {
-                        story.copy(
-                            storyEntries = story.storyEntries.mapIndexed { entryIndex, storyEntry ->
-                                if (entryIndex == storyEntryIndex) {
-                                    storyEntry.copy(isSeen = false)
-                                } else {
-                                    storyEntry
-                                }
-                            }
-                        )
-                    } else {
-                        story
+    fun onEventHandled(event: StoryState.Event?) {
+        _uiState.update { state ->
+            if (state.event == event) {
+                state.copy(
+                    event = null,
+                )
+            } else {
+                state
+            }
+        }
+    }
+
+    private fun onStoryGoBack(
+        storyIndex: Int,
+        storyEntryIndex: Int
+    ) {
+        _uiState.update { state ->
+            val stories =
+                state.stories.mutate { storyList ->
+                    storyList.mapIndexed { index, story ->
+                        if (index == storyIndex) {
+                            story.copy(
+                                storyEntries =
+                                    story.storyEntries.mutate { storyEntryList ->
+                                        storyEntryList.mapIndexed { entryIndex, storyEntry ->
+                                            if (entryIndex == storyEntryIndex) {
+                                                storyEntry.copy(isSeen = false)
+                                            } else {
+                                                storyEntry
+                                            }
+                                        }
+                                    },
+                            )
+                        } else {
+                            story
+                        }
                     }
                 }
+            state.copy(
+                stories = stories,
             )
         }
     }
 
-    private fun onStoryGoForward(storyIndex: Int, storyEntryIndex: Int) {
-        _state.update { state ->
-            state.copy(
-                stories = state.stories.mapIndexed { index, story ->
-                    if (index == storyIndex) {
-                        story.copy(
-                            storyEntries = story.storyEntries.mapIndexed { entryIndex, storyEntry ->
-                                if (entryIndex == storyEntryIndex) {
-                                    storyEntry.copy(isSeen = true)
-                                } else {
-                                    storyEntry
-                                }
-                            }
-                        )
-                    } else {
-                        story
+    private fun onStoryGoForward(
+        storyIndex: Int,
+        storyEntryIndex: Int
+    ) {
+        _uiState.update { state ->
+            val stories =
+                state.stories.mutate { storyList ->
+                    storyList.mapIndexed { index, story ->
+                        if (index == storyIndex) {
+                            story.copy(
+                                storyEntries =
+                                    story.storyEntries.mutate { storyEntryList ->
+                                        storyEntryList.mapIndexed { entryIndex, storyEntry ->
+                                            if (entryIndex == storyEntryIndex) {
+                                                storyEntry.copy(isSeen = true)
+                                            } else {
+                                                storyEntry
+                                            }
+                                        }
+                                    },
+                            )
+                        } else {
+                            story
+                        }
                     }
                 }
+            state.copy(
+                stories = stories,
             )
         }
     }
 
     private fun onProfileClick() {
-        viewModelScope.launch {
-            _navEvent.emit(StoryNavEvent.OpenProfile)
+        _uiState.update { state ->
+            state.copy(
+                event = StoryState.NavigateToProfileScreen,
+            )
         }
     }
 
@@ -103,13 +136,13 @@ class StoryViewModel @Inject constructor(
     }
 
     private fun onStoryReplyQueryChange(text: String) {
-        _state.update { it.copy(searchText = it.searchText.copy(text = text)) }
+        _uiState.update { it.copy(searchText = it.searchText.copy(text = text)) }
     }
 
     private fun onStoryReplySend() {
     }
 
     private fun onTabSelected(index: Int) {
-        _state.update { it.copy(selectedTabIndex = index) }
+        _uiState.update { it.copy(selectedTabIndex = index) }
     }
 }

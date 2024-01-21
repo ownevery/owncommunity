@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.gms)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.ktlint.gradle)
 }
 android {
     namespace = libs.versions.build.namespace.get()
@@ -22,7 +23,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -46,7 +48,11 @@ android {
     }
     configurations {
         api {
+            // org.jetbrains:annotations clashes with com.intellij:annotations
             exclude(group = "org.jetbrains", module = "annotations")
+
+            // kotlinx.collections.immutable.toImmutableList clashes with okhttp.internal.toImmutableList
+            exclude(group = "com.squareup.okhttp3", module = "okhttp")
         }
     }
 }
@@ -61,6 +67,7 @@ dependencies {
     implementation(libs.ui.tooling.preview)
     implementation(libs.material)
     implementation(libs.material3)
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.ksp)
@@ -72,10 +79,13 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     implementation(libs.kotlinx.datetime)
+    implementation(libs.kotlinx.collections.immutable)
     implementation(libs.retrofit)
     implementation(libs.coil.compose)
     implementation(libs.androidx.palette)
     implementation(libs.accompanist.drawablepainter)
+
+    lintChecks(libs.compose.lint.checks)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
@@ -84,4 +94,17 @@ dependencies {
     androidTestImplementation(libs.ui.test.junit4)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
+}
+
+configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    version.set(libs.versions.ktlint.get())
+    debug.set(true)
+    verbose.set(true)
+    android.set(true)
+    ignoreFailures.set(true)
+    enableExperimentalRules.set(true)
+    filter {
+        exclude("**/generated/**")
+        include("**/kotlin/**")
+    }
 }

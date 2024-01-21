@@ -10,27 +10,28 @@ fun Modifier.storyPointerInput(
     onFirstHalfTap: () -> Unit,
     onSecondHalfTap: () -> Unit,
     onHold: (released: Boolean) -> Unit,
-): Modifier = composed {
-    val screenMiddle = LocalContext.current.resources.displayMetrics.widthPixels / 2
-    var shouldRelease = false
-    Modifier.then(
-        pointerInput(Unit) {
-            detectTapGestures(
-                onTap = { offset ->
-                    if (offset.x < screenMiddle) onFirstHalfTap() else onSecondHalfTap()
-                },
-                onPress = {
-                    awaitRelease()
-                    if (shouldRelease) {
-                        onHold.invoke(true)
-                        shouldRelease = false
-                    }
-                },
-                onLongPress = {
-                    onHold.invoke(false)
-                    shouldRelease = true
-                }
-            )
-        }
-    )
-}
+): Modifier =
+    composed {
+        val screenMiddle = LocalContext.current.resources.displayMetrics.widthPixels / 2
+        var shouldRelease = false
+        Modifier.then(
+            pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { offset ->
+                        if (offset.x < screenMiddle) onFirstHalfTap() else onSecondHalfTap()
+                    },
+                    onPress = {
+                        awaitRelease()
+                        if (shouldRelease) {
+                            onHold.invoke(true)
+                            shouldRelease = false
+                        }
+                    },
+                    onLongPress = {
+                        onHold.invoke(false)
+                        shouldRelease = true
+                    },
+                )
+            },
+        )
+    }

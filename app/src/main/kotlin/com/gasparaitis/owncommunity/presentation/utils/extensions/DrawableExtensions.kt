@@ -11,9 +11,10 @@ val Drawable.palette get() = Palette.from(this.toBitmap()).generate()
 val Drawable.verticalBackgroundGradientBrush: Brush get() {
     val color = palette.getLightMutedColor(android.graphics.Color.BLACK)
     return Brush.verticalGradient(
-        colors = listOf(
-            Color(color),
-            Color(color.darken(0.8f))
-        ),
+        colors =
+            listOf(
+                Color(color),
+                Color(color.darken(0.8f)),
+            ),
     )
 }

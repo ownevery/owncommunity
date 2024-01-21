@@ -8,12 +8,13 @@ data class Profile(
     val isFollowed: Boolean,
 ) {
     companion object {
-        val EMPTY = Profile(
-            id = "",
-            profileImage = 0,
-            displayName = "",
-            followerCount = 0,
-            isFollowed = false,
-        )
+        val EMPTY =
+            Profile(
+                id = "",
+                profileImage = 0,
+                displayName = "",
+                followerCount = 0,
+                isFollowed = false,
+            )
     }
 }
