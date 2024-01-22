@@ -7,6 +7,7 @@ import com.gasparaitis.owncommunity.domain.shared.profile.model.Profile
 import com.gasparaitis.owncommunity.domain.shared.profile.usecase.ProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.mutate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -80,15 +81,9 @@ class SearchViewModel @Inject constructor(
     private fun onProfileFollowButtonClick(profile: Profile) {
         _uiState.update { state ->
             val profiles =
-                state.profiles.mutate { profileList ->
-                    profileList.map { p ->
-                        if (profile.id == p.id) {
-                            profile.copy(isFollowed = profile.isFollowed.not())
-                        } else {
-                            p
-                        }
-                    }
-                }
+                state.profiles.updateProfileById(
+                    profile.copy(isFollowed = profile.isFollowed.not()),
+                )
             state.copy(
                 profiles = profiles,
             )
@@ -138,7 +133,7 @@ class SearchViewModel @Inject constructor(
     }
 
     private fun onPostLikeClick(post: Post) =
-        updatePostsByItemId(
+        updatePost(
             post =
                 post.copy(
                     isLiked = post.isLiked.not(),
@@ -160,7 +155,7 @@ class SearchViewModel @Inject constructor(
     }
 
     private fun onPostShareClick(post: Post) =
-        updatePostsByItemId(
+        updatePost(
             post =
                 post.copy(
                     isShared = post.isShared.not(),
@@ -174,34 +169,24 @@ class SearchViewModel @Inject constructor(
         )
 
     private fun onPostBookmarkClick(post: Post) =
-        updatePostsByItemId(
+        updatePost(
             post =
                 post.copy(
                     isBookmarked = post.isBookmarked.not(),
                 ),
         )
 
-    private fun updatePostsByItemId(post: Post) {
+    private fun updatePost(post: Post) {
         _uiState.update { state ->
             when (state.selectedTabIndex) {
                 0 -> {
-                    val trendingPosts =
-                        state.trendingPosts.mutate { postList ->
-                            postList.map { item ->
-                                if (item.id == post.id) post else item
-                            }
-                        }
+                    val trendingPosts = state.trendingPosts.updatePost(post)
                     state.copy(
                         trendingPosts = trendingPosts,
                     )
                 }
                 1 -> {
-                    val latestPosts =
-                        state.latestPosts.mutate { postList ->
-                            postList.map { item ->
-                                if (item.id == post.id) post else item
-                            }
-                        }
+                    val latestPosts = state.latestPosts.updatePost(post)
                     state.copy(
                         latestPosts = latestPosts,
                     )
@@ -212,4 +197,22 @@ class SearchViewModel @Inject constructor(
             }
         }
     }
+
+    private fun PersistentList<Post>.updatePost(post: Post): PersistentList<Post> =
+        mutate { list ->
+            val index = list.indexOfFirst { item -> item.id == post.id }
+            if (index != -1) {
+                list[index] = post
+            }
+        }
+
+    private fun PersistentList<Profile>.updateProfileById(
+        profile: Profile
+    ): PersistentList<Profile> =
+        mutate { list ->
+            val index = list.indexOfFirst { item -> item.id == profile.id }
+            if (index != -1) {
+                list[index] = profile
+            }
+        }
 }

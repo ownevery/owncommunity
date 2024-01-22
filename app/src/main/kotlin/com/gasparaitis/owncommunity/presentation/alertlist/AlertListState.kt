@@ -1,4 +1,4 @@
-package com.gasparaitis.owncommunity.presentation.alerts
+package com.gasparaitis.owncommunity.presentation.alertlist
 
 import androidx.compose.runtime.Stable
 import com.gasparaitis.owncommunity.domain.alerts.model.AlertItem
@@ -7,13 +7,13 @@ import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 
 @Stable
-data class AlertsState(
+data class AlertListState(
     val alertMap: PersistentMap<AlertItem.Section, PersistentList<AlertItem>>,
     val event: Event?,
 ) {
     companion object {
         val EMPTY =
-            AlertsState(
+            AlertListState(
                 alertMap = persistentMapOf(),
                 event = null,
             )

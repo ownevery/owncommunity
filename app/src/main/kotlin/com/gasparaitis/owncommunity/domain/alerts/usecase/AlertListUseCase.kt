@@ -11,7 +11,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 
-class AlertsUseCase {
+class AlertListUseCase {
     fun getAlerts(): PersistentMap<AlertItem.Section, PersistentList<AlertItem>> =
         alerts.groupBy {
             it.section

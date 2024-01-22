@@ -1,4 +1,4 @@
-package com.gasparaitis.owncommunity.presentation.alerts
+package com.gasparaitis.owncommunity.presentation.alertlist
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gasparaitis.owncommunity.R
-import com.gasparaitis.owncommunity.domain.alerts.usecase.AlertsUseCase
+import com.gasparaitis.owncommunity.domain.alerts.usecase.AlertListUseCase
 import com.gasparaitis.owncommunity.presentation.destinations.PostScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
 import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableTimeAgo
@@ -47,18 +47,18 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 @Destination
 @Composable
-fun AlertsScreen(
+fun AlertListScreen(
     navigator: DestinationsNavigator,
-    viewModel: AlertsViewModel = hiltViewModel(),
+    viewModel: AlertListViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lazyListState = rememberLazyListState()
-    AlertsScreenContent(
+    AlertListScreenContent(
         state = state,
         lazyListState = lazyListState,
         onEvent = viewModel::onEvent,
     )
-    EventHandler(
+    AlertEventHandler(
         event = state.event,
         navigator = navigator,
         onEventHandled = viewModel::onEventHandled,
@@ -66,23 +66,23 @@ fun AlertsScreen(
 }
 
 @Composable
-private fun EventHandler(
-    event: AlertsState.Event?,
+private fun AlertEventHandler(
+    event: AlertListState.Event?,
     navigator: DestinationsNavigator,
-    onEventHandled: (AlertsState.Event?) -> Unit,
+    onEventHandled: (AlertListState.Event?) -> Unit,
 ) {
     LaunchedEffect(event) {
         when (event) {
-            AlertsState.NavigateToPostScreen -> {
+            AlertListState.NavigateToPostScreen -> {
                 navigator.navigate(PostScreenDestination)
             }
 
-            AlertsState.NavigateToProfileScreen -> {
+            AlertListState.NavigateToProfileScreen -> {
                 navigator.navigate(ProfileScreenDestination)
             }
 
-            is AlertsState.OnAlertItemClick -> {}
-            AlertsState.OnMarkAllAsReadClick -> {}
+            is AlertListState.OnAlertItemClick -> {}
+            AlertListState.OnMarkAllAsReadClick -> {}
             null -> {}
         }
         onEventHandled(event)
@@ -90,16 +90,16 @@ private fun EventHandler(
 }
 
 @Composable
-private fun AlertsScreenContent(
-    state: AlertsState,
+private fun AlertListScreenContent(
+    state: AlertListState,
     lazyListState: LazyListState,
-    onEvent: (AlertsState.Event) -> Unit,
+    onEvent: (AlertListState.Event) -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
     ) {
         TopRow(
-            onMarkAllAsReadClick = { onEvent(AlertsState.OnMarkAllAsReadClick) },
+            onMarkAllAsReadClick = { onEvent(AlertListState.OnMarkAllAsReadClick) },
         )
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -116,7 +116,7 @@ private fun AlertsScreenContent(
                     count = items.size,
                 ) { index ->
                     AlertListItem(
-                        onClick = { onEvent(AlertsState.OnAlertItemClick(items[index])) },
+                        onClick = { onEvent(AlertListState.OnAlertItemClick(items[index])) },
                         isRead = items[index].isRead,
                         imagePainter = painterResource(items[index].type.icon),
                         title = items[index].title,
@@ -258,9 +258,9 @@ private fun AlertListItemDivider() {
 
 @Preview
 @Composable
-private fun AlertsScreenContentPreview() {
-    AlertsScreenContent(
-        state = AlertsState.EMPTY.copy(alertMap = AlertsUseCase().getAlerts()),
+private fun AlertListScreenContentPreview() {
+    AlertListScreenContent(
+        state = AlertListState.EMPTY.copy(alertMap = AlertListUseCase().getAlerts()),
         lazyListState = rememberLazyListState(),
         onEvent = {},
     )

@@ -40,8 +40,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gasparaitis.owncommunity.R
 import com.gasparaitis.owncommunity.domain.shared.story.model.Story
-import com.gasparaitis.owncommunity.presentation.destinations.AlertsScreenDestination
+import com.gasparaitis.owncommunity.presentation.destinations.AlertListScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.HomeScreenDestination
+import com.gasparaitis.owncommunity.presentation.destinations.PostScreenDestination
+import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
+import com.gasparaitis.owncommunity.presentation.destinations.StoryScreenDestination
 import com.gasparaitis.owncommunity.presentation.main.bottomnavigation.BottomNavigationState
 import com.gasparaitis.owncommunity.presentation.main.bottomnavigation.BottomNavigationViewModel
 import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostView
@@ -54,7 +57,7 @@ import com.gasparaitis.owncommunity.presentation.utils.theme.slightBottomDarkGra
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.popUpTo
-import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.ImmutableList
 
 @Destination(start = true)
 @Composable
@@ -93,22 +96,22 @@ private fun HomeEventHandler(
     LaunchedEffect(event) {
         when (event) {
             HomeState.NavigateToAlertListScreen -> {
-                navigator.navigate(AlertsScreenDestination) {
+                navigator.navigate(AlertListScreenDestination) {
                     popUpTo(HomeScreenDestination) { saveState = true }
                 }
             }
             HomeState.NavigateToPostAuthorProfileScreen -> {
-                navigator.navigate(AlertsScreenDestination) {
+                navigator.navigate(ProfileScreenDestination) {
                     popUpTo(HomeScreenDestination) { saveState = true }
                 }
             }
             HomeState.NavigateToPostScreen -> {
-                navigator.navigate(AlertsScreenDestination) {
+                navigator.navigate(PostScreenDestination) {
                     popUpTo(HomeScreenDestination) { saveState = true }
                 }
             }
             HomeState.NavigateToStoryListScreen -> {
-                navigator.navigate(AlertsScreenDestination) {
+                navigator.navigate(StoryScreenDestination) {
                     popUpTo(HomeScreenDestination) { saveState = true }
                 }
             }
@@ -178,10 +181,10 @@ private fun TopRow(
 ) {
     Row(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(top = 16.dp, bottom = 32.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(top = 16.dp, bottom = 32.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -233,7 +236,7 @@ private fun HomeTopRowAlertIconButton(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun StoryPager(
-    items: PersistentList<Story>,
+    items: ImmutableList<Story>,
     onStoryClick: (Story) -> Unit,
     itemWidth: Dp = 100.dp,
     itemHeight: Dp = 140.dp,

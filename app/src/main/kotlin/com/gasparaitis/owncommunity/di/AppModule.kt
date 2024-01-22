@@ -1,6 +1,6 @@
 package com.gasparaitis.owncommunity.di
 
-import com.gasparaitis.owncommunity.domain.alerts.usecase.AlertsUseCase
+import com.gasparaitis.owncommunity.domain.alerts.usecase.AlertListUseCase
 import com.gasparaitis.owncommunity.domain.shared.post.usecase.PostUseCase
 import com.gasparaitis.owncommunity.domain.shared.profile.usecase.ProfileUseCase
 import com.gasparaitis.owncommunity.domain.shared.story.usecase.StoryUseCase
@@ -22,5 +22,5 @@ object AppModule {
     fun providesProfileUseCase() = ProfileUseCase()
 
     @Provides
-    fun providesAlertsUseCase() = AlertsUseCase()
+    fun providesAlertsUseCase() = AlertListUseCase()
 }

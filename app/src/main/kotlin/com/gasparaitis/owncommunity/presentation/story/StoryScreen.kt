@@ -171,7 +171,7 @@ private fun StoryHorizontalPager(
         }
     }
     LaunchedEffect(key1 = pagerState) {
-        this.launch {
+        launch {
             snapshotFlow { pagerState.currentPage }.distinctUntilChanged().collect { tabIndex ->
                 onPageSelected(tabIndex)
             }
@@ -237,7 +237,7 @@ private fun StoryView(
 }
 
 @Composable
-fun StoryTopGradient(modifier: Modifier = Modifier,) {
+private fun StoryTopGradient(modifier: Modifier = Modifier,) {
     Box(
         modifier =
             Modifier
@@ -276,7 +276,7 @@ private fun StoryViewItem(
 }
 
 @Composable
-fun StoryProfileRow(
+private fun StoryProfileRow(
     story: Story,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -348,7 +348,7 @@ private fun StoryViewItemBackgroundBox(
 }
 
 @Composable
-fun LinearIndicatorRow(
+private fun LinearIndicatorRow(
     story: Story,
     currentIndex: Int,
     onAnimationEnd: () -> Unit,

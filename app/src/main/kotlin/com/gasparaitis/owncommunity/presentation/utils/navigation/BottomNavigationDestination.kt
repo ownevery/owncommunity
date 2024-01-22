@@ -3,7 +3,7 @@ package com.gasparaitis.owncommunity.presentation.utils.navigation
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.gasparaitis.owncommunity.R
-import com.gasparaitis.owncommunity.presentation.destinations.AlertsScreenDestination
+import com.gasparaitis.owncommunity.presentation.destinations.AlertListScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.CreateScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.Destination
 import com.gasparaitis.owncommunity.presentation.destinations.HomeScreenDestination
@@ -25,7 +25,7 @@ enum class BottomNavigationDestination(
     Create(CreateScreenDestination, R.drawable.ic_create, R.string.bottom_navigation_create),
 
     // #4
-    Alerts(AlertsScreenDestination, R.drawable.ic_alert, R.string.bottom_navigation_alerts),
+    Alerts(AlertListScreenDestination, R.drawable.ic_alert, R.string.bottom_navigation_alerts),
 
     // #5
     Profile(ProfileScreenDestination, R.drawable.ic_profile, R.string.bottom_navigation_profile),
