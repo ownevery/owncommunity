@@ -1,8 +1,6 @@
 package com.gasparaitis.owncommunity.di
 
-import com.gasparaitis.owncommunity.domain.alerts.usecase.AlertsUseCase
-import com.gasparaitis.owncommunity.domain.home.usecase.HomeUseCase
-import com.gasparaitis.owncommunity.domain.search.usecase.SearchUseCase
+import com.gasparaitis.owncommunity.domain.alerts.usecase.AlertListUseCase
 import com.gasparaitis.owncommunity.domain.shared.post.usecase.PostUseCase
 import com.gasparaitis.owncommunity.domain.shared.profile.usecase.ProfileUseCase
 import com.gasparaitis.owncommunity.domain.shared.story.usecase.StoryUseCase
@@ -24,17 +22,5 @@ object AppModule {
     fun providesProfileUseCase() = ProfileUseCase()
 
     @Provides
-    fun providesHomeUseCase(
-        postUseCase: PostUseCase,
-        storyUseCase: StoryUseCase,
-    ) = HomeUseCase(postUseCase, storyUseCase)
-
-    @Provides
-    fun providesAlertsUseCase() = AlertsUseCase()
-
-    @Provides
-    fun providesSearchUseCase(
-        postUseCase: PostUseCase,
-        profileUseCase: ProfileUseCase,
-    ) = SearchUseCase(postUseCase, profileUseCase)
+    fun providesAlertsUseCase() = AlertListUseCase()
 }

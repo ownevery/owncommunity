@@ -48,9 +48,10 @@ fun CustomTextField(
         interactionSource = interactionSource,
         decorationBox = { innerTextField ->
             Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(32.dp))
-                    .background(backgroundColor),
+                modifier =
+                    Modifier
+                        .clip(RoundedCornerShape(32.dp))
+                        .background(backgroundColor),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Spacer(modifier = Modifier.width(16.dp))

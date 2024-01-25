@@ -1,161 +1,218 @@
 package com.gasparaitis.owncommunity.presentation.search
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.gasparaitis.owncommunity.domain.search.usecase.SearchUseCase
 import com.gasparaitis.owncommunity.domain.shared.post.model.Post
+import com.gasparaitis.owncommunity.domain.shared.post.usecase.PostUseCase
 import com.gasparaitis.owncommunity.domain.shared.profile.model.Profile
-import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostAction
+import com.gasparaitis.owncommunity.domain.shared.profile.usecase.ProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.mutate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val searchUseCase: SearchUseCase,
+    private val postUseCase: PostUseCase,
+    private val profileUseCase: ProfileUseCase,
 ) : ViewModel() {
-    private val _state: MutableStateFlow<SearchState> = MutableStateFlow(SearchState.EMPTY)
-    val state: StateFlow<SearchState> = _state.asStateFlow()
-
-    private val _navEvent = MutableSharedFlow<SearchNavEvent>()
-    val navEvent = _navEvent.asSharedFlow()
+    private val _uiState: MutableStateFlow<SearchState> = MutableStateFlow(SearchState.EMPTY)
+    val uiState: StateFlow<SearchState> = _uiState.asStateFlow()
 
     init {
         onCreated()
     }
 
     private fun onCreated() {
-        _state.value = searchUseCase.getState()
+        val trendingPosts = postUseCase.getTrendingPosts()
+        val latestPosts = postUseCase.getLatestPosts()
+        val profiles = profileUseCase.getSuggestedProfiles()
+        _uiState.update { state ->
+            state.copy(
+                selectedTabIndex = state.selectedTabIndex,
+                searchText = state.searchText,
+                trendingPosts = trendingPosts,
+                latestPosts = latestPosts,
+                profiles = profiles,
+            )
+        }
     }
 
-    fun onAction(action: SearchAction) {
-        when (action) {
-            SearchAction.OnSearchBarClick -> onSearchBarClick()
-            is SearchAction.OnSearchBarQueryChange -> onSearchBarQueryChange(action.query)
-            SearchAction.OnSearchIconRepeatClick -> onSearchIconRepeatClick()
-            is SearchAction.OnTabSelected -> onTabSelected(action.index)
-            is SearchAction.OnPostAction -> {
-                when (action.postAction) {
-                    is PostAction.OnAuthorClick -> onPostAuthorClick(action.postAction.item)
-                    is PostAction.OnBodyClick -> onPostBodyClick()
-                    is PostAction.OnBookmarkClick -> onPostBookmarkClick(action.postAction.item)
-                    is PostAction.OnCommentClick -> onPostCommentClick(action.postAction.item)
-                    is PostAction.OnLikeClick -> onPostLikeClick(action.postAction.item)
-                    is PostAction.OnShareClick -> onPostShareClick(action.postAction.item)
+    fun onEvent(event: SearchState.Event) {
+        when (event) {
+            SearchState.OnSearchBarClick -> onSearchBarClick()
+            is SearchState.OnSearchBarQueryChange -> onSearchBarQueryChange(event.query)
+            SearchState.OnSearchIconRepeatClick -> onSearchIconRepeatClick()
+            is SearchState.OnTabSelected -> onTabSelected(event.index)
+            is SearchState.OnPostEvent -> {
+                when (event.postEvent) {
+                    is Post.OnAuthorClick -> onPostAuthorClick(event.postEvent.item)
+                    is Post.OnBodyClick -> onPostBodyClick()
+                    is Post.OnBookmarkClick -> onPostBookmarkClick(event.postEvent.item)
+                    is Post.OnCommentClick -> onPostCommentClick(event.postEvent.item)
+                    is Post.OnLikeClick -> onPostLikeClick(event.postEvent.item)
+                    is Post.OnShareClick -> onPostShareClick(event.postEvent.item)
                 }
             }
-            is SearchAction.OnProfileBodyClick -> onProfileBodyClick(action.profile)
-            is SearchAction.OnProfileFollowButtonClick -> onProfileFollowButtonClick(action.profile)
+            is SearchState.OnProfileBodyClick -> onProfileBodyClick(event.profile)
+            is SearchState.OnProfileFollowButtonClick -> onProfileFollowButtonClick(event.profile)
+            SearchState.NavigateToPostAuthorProfileScreen -> {}
+            SearchState.NavigateToPostScreen -> {}
+            SearchState.NavigateToProfileScreen -> {}
+            SearchState.ScrollUp -> {}
+        }
+    }
+
+    fun onEventHandled(event: SearchState.Event?) {
+        _uiState.update { state ->
+            if (state.event == event) {
+                state.copy(
+                    event = null,
+                )
+            } else {
+                state
+            }
         }
     }
 
     private fun onProfileFollowButtonClick(profile: Profile) {
-        _state.update { state ->
+        _uiState.update { state ->
+            val profiles =
+                state.profiles.updateProfileById(
+                    profile.copy(isFollowed = profile.isFollowed.not()),
+                )
             state.copy(
-                profiles = state.profiles.map {
-                    if (profile.id == it.id) {
-                        profile.copy(isFollowed = profile.isFollowed.not())
-                    } else {
-                        it
-                    }
-                }.toMutableList()
+                profiles = profiles,
             )
         }
     }
 
     private fun onProfileBodyClick(profile: Profile) {
-        viewModelScope.launch {
-            _navEvent.emit(SearchNavEvent.OpenProfile)
+        _uiState.update { state ->
+            state.copy(
+                event = SearchState.NavigateToProfileScreen,
+            )
         }
     }
 
     private fun onSearchBarClick() { /* Opens search action bottom sheet. */ }
 
     private fun onSearchBarQueryChange(text: String) {
-        _state.update { it.copy(searchText = it.searchText.copy(text = text)) }
+        _uiState.update { it.copy(searchText = it.searchText.copy(text = text)) }
     }
 
     private fun onSearchIconRepeatClick() {
-        viewModelScope.launch {
-            _navEvent.emit(SearchNavEvent.ScrollUp)
+        _uiState.update { state ->
+            state.copy(
+                event = SearchState.ScrollUp,
+            )
         }
     }
 
     private fun onTabSelected(index: Int) {
-        _state.update { it.copy(selectedTabIndex = index) }
+        _uiState.update { it.copy(selectedTabIndex = index) }
     }
 
     private fun onPostBodyClick() {
-        viewModelScope.launch {
-            _navEvent.emit(SearchNavEvent.OpenPost)
+        _uiState.update { state ->
+            state.copy(
+                event = SearchState.NavigateToPostScreen,
+            )
         }
     }
 
     private fun onPostAuthorClick(item: Post) {
-        viewModelScope.launch {
-            _navEvent.emit(SearchNavEvent.OpenPostAuthorProfile)
+        _uiState.update { state ->
+            state.copy(
+                event = SearchState.NavigateToPostAuthorProfileScreen,
+            )
         }
     }
 
     private fun onPostLikeClick(post: Post) =
-        updatePostsByItemId(
-            post = post.copy(
-                isLiked = post.isLiked.not(),
-                likeCount = if (post.isLiked) {
-                    post.likeCount.dec()
-                } else {
-                    post.likeCount.inc()
-                },
-            ),
+        updatePost(
+            post =
+                post.copy(
+                    isLiked = post.isLiked.not(),
+                    likeCount =
+                        if (post.isLiked) {
+                            post.likeCount.dec()
+                        } else {
+                            post.likeCount.inc()
+                        },
+                ),
         )
 
     private fun onPostCommentClick(post: Post) {
-        viewModelScope.launch {
-            _navEvent.emit(SearchNavEvent.OpenPost)
+        _uiState.update { state ->
+            state.copy(
+                event = SearchState.NavigateToPostScreen,
+            )
         }
     }
 
     private fun onPostShareClick(post: Post) =
-        updatePostsByItemId(
-            post = post.copy(
-                isShared = post.isShared.not(),
-                shareCount = if (post.isShared) {
-                    post.shareCount.dec()
-                } else {
-                    post.shareCount.inc()
-                },
-            ),
+        updatePost(
+            post =
+                post.copy(
+                    isShared = post.isShared.not(),
+                    shareCount =
+                        if (post.isShared) {
+                            post.shareCount.dec()
+                        } else {
+                            post.shareCount.inc()
+                        },
+                ),
         )
 
     private fun onPostBookmarkClick(post: Post) =
-        updatePostsByItemId(
-            post = post.copy(
-                isBookmarked = post.isBookmarked.not(),
-            ),
+        updatePost(
+            post =
+                post.copy(
+                    isBookmarked = post.isBookmarked.not(),
+                ),
         )
 
-    private fun updatePostsByItemId(post: Post) {
-        when (state.value.selectedTabIndex) {
-            0 -> {
-                _state.value = _state.value.copy(
-                    trendingPosts = _state.value.trendingPosts.map { item ->
-                        if (item.id == post.id) post else item
-                    },
-                )
-            }
-            1 -> {
-                _state.value = _state.value.copy(
-                    latestPosts = _state.value.latestPosts.map { item ->
-                        if (item.id == post.id) post else item
-                    },
-                )
+    private fun updatePost(post: Post) {
+        _uiState.update { state ->
+            when (state.selectedTabIndex) {
+                0 -> {
+                    val trendingPosts = state.trendingPosts.updatePost(post)
+                    state.copy(
+                        trendingPosts = trendingPosts,
+                    )
+                }
+                1 -> {
+                    val latestPosts = state.latestPosts.updatePost(post)
+                    state.copy(
+                        latestPosts = latestPosts,
+                    )
+                }
+                else -> {
+                    state
+                }
             }
         }
     }
+
+    private fun PersistentList<Post>.updatePost(post: Post): PersistentList<Post> =
+        mutate { list ->
+            val index = list.indexOfFirst { item -> item.id == post.id }
+            if (index != -1) {
+                list[index] = post
+            }
+        }
+
+    private fun PersistentList<Profile>.updateProfileById(
+        profile: Profile
+    ): PersistentList<Profile> =
+        mutate { list ->
+            val index = list.indexOfFirst { item -> item.id == profile.id }
+            if (index != -1) {
+                list[index] = profile
+            }
+        }
 }

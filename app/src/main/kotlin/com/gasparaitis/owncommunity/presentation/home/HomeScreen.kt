@@ -3,7 +3,6 @@ package com.gasparaitis.owncommunity.presentation.home
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,13 +17,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,46 +32,110 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gasparaitis.owncommunity.R
 import com.gasparaitis.owncommunity.domain.shared.story.model.Story
+import com.gasparaitis.owncommunity.presentation.destinations.AlertListScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.HomeScreenDestination
+import com.gasparaitis.owncommunity.presentation.destinations.PostScreenDestination
+import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
+import com.gasparaitis.owncommunity.presentation.destinations.StoryScreenDestination
+import com.gasparaitis.owncommunity.presentation.main.bottomnavigation.BottomNavigationState
+import com.gasparaitis.owncommunity.presentation.main.bottomnavigation.BottomNavigationViewModel
 import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostView
+import com.gasparaitis.owncommunity.presentation.shared.composables.story.StoryProfileImage
 import com.gasparaitis.owncommunity.presentation.utils.extensions.componentActivity
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
 import com.gasparaitis.owncommunity.presentation.utils.theme.TextStyles
-import com.gasparaitis.owncommunity.presentation.utils.theme.defaultGradientBrush
-import com.gasparaitis.owncommunity.presentation.utils.theme.slightDarkGradientBrush
+import com.gasparaitis.owncommunity.presentation.utils.theme.slightBottomDarkGradientBrush
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.popUpTo
+import kotlinx.collections.immutable.ImmutableList
 
 @Destination(start = true)
 @Composable
 fun HomeScreen(
     navigator: DestinationsNavigator,
-    viewModel: HomeViewModel = hiltViewModel(LocalContext.current.componentActivity),
+    viewModel: HomeViewModel = hiltViewModel(),
+    bottomNavigationViewModel: BottomNavigationViewModel =
+        hiltViewModel(LocalContext.current.componentActivity),
 ) {
-    val state = viewModel.state.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val bottomNavigationState by bottomNavigationViewModel.uiState.collectAsStateWithLifecycle()
     val lazyListState = rememberLazyListState()
     HomeContent(
-        state = state.value,
+        state = state,
         lazyListState = lazyListState,
-        onAction = viewModel::onAction,
+        onEvent = viewModel::onEvent,
     )
-    LaunchedEffect(Unit) {
-        viewModel.navEvent.collect {
-            if (it is HomeNavEvent.ScrollUp && lazyListState.canScrollBackward) {
-                lazyListState.animateScrollToItem(0)
-                return@collect
+    HomeEventHandler(
+        event = state.event,
+        onEventHandled = viewModel::onEventHandled,
+        navigator = navigator,
+    )
+    BottomNavigationEventHandler(
+        event = bottomNavigationState.event,
+        onEventHandled = bottomNavigationViewModel::onEventHandled,
+        lazyListState = lazyListState,
+    )
+}
+
+@Composable
+private fun HomeEventHandler(
+    event: HomeState.Event?,
+    onEventHandled: (HomeState.Event?) -> Unit,
+    navigator: DestinationsNavigator,
+) {
+    LaunchedEffect(event) {
+        when (event) {
+            HomeState.NavigateToAlertListScreen -> {
+                navigator.navigate(AlertListScreenDestination) {
+                    popUpTo(HomeScreenDestination) { saveState = true }
+                }
             }
-            navigator.navigate(it.destination) {
-                popUpTo(HomeScreenDestination) { saveState = true }
+            HomeState.NavigateToPostAuthorProfileScreen -> {
+                navigator.navigate(ProfileScreenDestination) {
+                    popUpTo(HomeScreenDestination) { saveState = true }
+                }
             }
+            HomeState.NavigateToPostScreen -> {
+                navigator.navigate(PostScreenDestination) {
+                    popUpTo(HomeScreenDestination) { saveState = true }
+                }
+            }
+            HomeState.NavigateToStoryListScreen -> {
+                navigator.navigate(StoryScreenDestination) {
+                    popUpTo(HomeScreenDestination) { saveState = true }
+                }
+            }
+            HomeState.OnAlertIconClick -> {}
+            is HomeState.OnPostEvent -> {}
+            is HomeState.OnStoryClick -> {}
+            null -> {}
+        }
+        onEventHandled(event)
+    }
+}
+
+@Composable
+private fun BottomNavigationEventHandler(
+    event: BottomNavigationState.Event?,
+    onEventHandled: (BottomNavigationState.Event?) -> Unit,
+    lazyListState: LazyListState,
+) {
+    LaunchedEffect(event) {
+        if (event is BottomNavigationState.OnHomeIconRepeatClick &&
+            lazyListState.canScrollBackward
+        ) {
+            lazyListState.animateScrollToItem(0)
+            onEventHandled(event)
         }
     }
 }
@@ -82,12 +144,12 @@ fun HomeScreen(
 private fun HomeContent(
     state: HomeState,
     lazyListState: LazyListState,
-    onAction: (HomeAction) -> Unit,
+    onEvent: (HomeState.Event) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         TopRow(
             isAlertBadgeEnabled = !state.areAllAlertsRead,
-            onAlertIconClick = { onAction(HomeAction.OnAlertIconClick) }
+            onAlertIconClick = { onEvent(HomeState.OnAlertIconClick) },
         )
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -96,7 +158,7 @@ private fun HomeContent(
             item {
                 StoryPager(
                     items = state.stories,
-                    onStoryClick = { onAction(HomeAction.OnStoryClick(it)) },
+                    onStoryClick = { onEvent(HomeState.OnStoryClick(it)) },
                 )
             }
             items(
@@ -105,7 +167,7 @@ private fun HomeContent(
             ) { index ->
                 PostView(
                     item = state.posts[index],
-                    onAction = { onAction(HomeAction.OnPostAction(it)) },
+                    onAction = { onEvent(HomeState.OnPostEvent(it)) },
                 )
             }
         }
@@ -118,10 +180,11 @@ private fun TopRow(
     isAlertBadgeEnabled: Boolean
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(top = 16.dp, bottom = 32.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(top = 16.dp, bottom = 32.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -136,9 +199,7 @@ private fun TopRow(
 }
 
 @Composable
-private fun HomeTopRowTitle(
-    title: String,
-) {
+private fun HomeTopRowTitle(title: String) {
     Text(
         text = title,
         style = TextStyles.title,
@@ -160,10 +221,11 @@ private fun HomeTopRowAlertIconButton(
         )
         if (!isBadgeEnabled) return@Box
         Icon(
-            modifier = Modifier
-                .size(10.dp)
-                .zIndex(1f)
-                .align(Alignment.TopEnd),
+            modifier =
+                Modifier
+                    .size(10.dp)
+                    .zIndex(1f)
+                    .align(Alignment.TopEnd),
             painter = painterResource(id = R.drawable.ic_alert_badge),
             tint = Color.Unspecified,
             contentDescription = "Alert badge",
@@ -174,28 +236,29 @@ private fun HomeTopRowAlertIconButton(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun StoryPager(
-    items: List<Story>,
+    items: ImmutableList<Story>,
     onStoryClick: (Story) -> Unit,
     itemWidth: Dp = 100.dp,
     itemHeight: Dp = 140.dp,
 ) {
-    val state = rememberPagerState()
+    val state = rememberPagerState { items.size }
     HorizontalPager(
-        modifier = Modifier.padding(
-            start = 24.dp,
-            bottom = 24.dp,
-        ),
-        pageCount = items.size,
-        pageSize = PageSize.Fixed(itemWidth),
-        pageSpacing = 12.dp,
+        modifier =
+            Modifier.padding(
+                start = 24.dp,
+                bottom = 24.dp,
+            ),
         state = state,
+        pageSpacing = 12.dp,
+        pageSize = PageSize.Fixed(itemWidth),
         beyondBoundsPageCount = 5,
     ) { index ->
+        if (items[index].entries.isEmpty()) return@HorizontalPager
         HomeStoryPagerItem(
             itemWidth = itemWidth,
             itemHeight = itemHeight,
-            profileImage = painterResource(id = items[index].profileImage),
-            storyImage = painterResource(id = items[index].storyImage),
+            profileImage = painterResource(id = items[index].profile.profileImage),
+            storyImage = painterResource(id = items[index].entries.first().drawableResId),
             isStoryRead = items[index].isRead,
             onClick = { onStoryClick(items[index]) },
         )
@@ -212,9 +275,10 @@ private fun HomeStoryPagerItem(
     onClick: () -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .size(width = itemWidth, height = itemHeight)
-            .noRippleClickable(onClick),
+        modifier =
+            Modifier
+                .size(width = itemWidth, height = itemHeight)
+                .noRippleClickable(onClick),
     ) {
         HomeStoryHorizontalPagerItemMainImage(
             modifier = Modifier.zIndex(0f),
@@ -222,10 +286,11 @@ private fun HomeStoryPagerItem(
             itemHeight = itemHeight,
             image = storyImage,
         )
-        HomeStoryHorizontalPagerItemProfileImage(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .zIndex(2f),
+        StoryProfileImage(
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .zIndex(2f),
             onClick = onClick,
             image = profileImage,
             shouldShowBorder = !isStoryRead,
@@ -240,16 +305,17 @@ private fun HomeStoryPagerItem(
 
 @Composable
 private fun HomeStoryHorizontalPagerItemMainImage(
-    modifier: Modifier,
     itemWidth: Dp,
     itemHeight: Dp,
     image: Painter,
+    modifier: Modifier = Modifier,
 ) {
     Image(
-        modifier = Modifier
-            .size(width = itemWidth, height = itemHeight)
-            .clip(RoundedCornerShape(16.dp))
-            .then(modifier),
+        modifier =
+            Modifier
+                .size(width = itemWidth, height = itemHeight)
+                .clip(RoundedCornerShape(16.dp))
+                .then(modifier),
         contentScale = ContentScale.FillHeight,
         painter = image,
         contentDescription = "Story image",
@@ -257,43 +323,27 @@ private fun HomeStoryHorizontalPagerItemMainImage(
 }
 
 @Composable
-private fun HomeStoryHorizontalPagerItemProfileImage(
-    modifier: Modifier,
-    onClick: () -> Unit,
-    image: Painter,
-    shouldShowBorder: Boolean,
+private fun HomeStoryHorizontalPagerItemDarkGradientBox(
+    itemWidth: Dp,
+    itemHeight: Dp,
+    modifier: Modifier = Modifier,
 ) {
-    val gradientBorder = Modifier
-        .border(width = 2.dp, brush = defaultGradientBrush(), shape = CircleShape)
-    val blackBorder = Modifier
-        .border(width = 2.dp, color = Colors.PureBlack, shape = CircleShape)
-    Image(
-        modifier = Modifier
-            .padding(bottom = 8.dp)
-            .then(if (shouldShowBorder) gradientBorder else Modifier)
-            .padding(2.dp)
-            .size(40.dp)
-            .clip(CircleShape)
-            .then(if (shouldShowBorder) blackBorder else Modifier)
-            .then(modifier)
-            .noRippleClickable(onClick),
-        contentScale = ContentScale.Crop,
-        painter = image,
-        contentDescription = "Story profile image",
+    Box(
+        modifier =
+            Modifier
+                .size(width = itemWidth, height = itemHeight)
+                .clip(RoundedCornerShape(16.dp))
+                .background(brush = slightBottomDarkGradientBrush())
+                .then(modifier),
     )
 }
 
+@Preview(showSystemUi = true)
 @Composable
-private fun HomeStoryHorizontalPagerItemDarkGradientBox(
-    modifier: Modifier,
-    itemWidth: Dp,
-    itemHeight: Dp,
-) {
-    Box(
-        modifier = Modifier
-            .size(width = itemWidth, height = itemHeight)
-            .clip(RoundedCornerShape(16.dp))
-            .background(brush = slightDarkGradientBrush())
-            .then(modifier),
+private fun ScreenPreview() {
+    HomeContent(
+        state = HomeState.EMPTY,
+        lazyListState = rememberLazyListState(),
+        onEvent = {},
     )
 }

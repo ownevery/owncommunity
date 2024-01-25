@@ -1,4 +1,4 @@
-package com.gasparaitis.owncommunity.presentation.main
+package com.gasparaitis.owncommunity.presentation.main.bottomnavigation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
@@ -16,7 +16,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.gasparaitis.owncommunity.presentation.destinations.CreateScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.HomeScreenDestination
-import com.gasparaitis.owncommunity.presentation.destinations.SearchScreenDestination
 import com.gasparaitis.owncommunity.presentation.utils.navigation.BottomNavigationDestination
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
@@ -24,15 +23,18 @@ import com.ramcosta.composedestinations.utils.currentDestinationAsState
 @Composable
 fun BottomNavigationBar(
     navController: NavController,
-    onHomeDestinationRepeatClick: () -> Unit,
-    onSearchDestinationRepeatClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    onHomeDestinationRepeatClick: () -> Unit = {},
 ) {
     val currentDestination = navController.currentDestinationAsState()
     NavigationBar(
-        modifier = Modifier.height(64.dp),
+        modifier =
+            Modifier
+                .height(64.dp)
+                .then(modifier),
         containerColor = Colors.PureBlack,
     ) {
-        BottomNavigationDestination.values().forEach { destination ->
+        BottomNavigationDestination.entries.forEach { destination ->
             NavigationBarItem(
                 selected = currentDestination.value == destination.direction,
                 onClick = {
@@ -40,10 +42,6 @@ fun BottomNavigationBar(
                         currentDestination.value == HomeScreenDestination
                     ) {
                         onHomeDestinationRepeatClick()
-                        return@NavigationBarItem
-                    } else if (destination.direction == SearchScreenDestination &&
-                        currentDestination.value == SearchScreenDestination) {
-                        onSearchDestinationRepeatClick()
                         return@NavigationBarItem
                     }
                     navController.navigate(destination.direction.route) {
@@ -68,18 +66,19 @@ fun BottomNavigationBar(
                         )
                     }
                 },
-                colors = if (destination.direction == CreateScreenDestination) {
-                    NavigationBarItemDefaults.colors(
-                        selectedIconColor = Colors.Transparent,
-                        indicatorColor = Colors.Transparent,
-                    )
-                } else {
-                    NavigationBarItemDefaults.colors(
-                        selectedIconColor = Colors.PureWhite,
-                        unselectedIconColor = Colors.LightGray,
-                        indicatorColor = Colors.Transparent,
-                    )
-                },
+                colors =
+                    if (destination.direction == CreateScreenDestination) {
+                        NavigationBarItemDefaults.colors(
+                            selectedIconColor = Colors.Transparent,
+                            indicatorColor = Colors.Transparent,
+                        )
+                    } else {
+                        NavigationBarItemDefaults.colors(
+                            selectedIconColor = Colors.PureWhite,
+                            unselectedIconColor = Colors.LightGray,
+                            indicatorColor = Colors.Transparent,
+                        )
+                    },
             )
         }
     }

@@ -16,10 +16,10 @@ val Context.activity: Activity get() {
 
 val Context.componentActivity: ComponentActivity
     get() {
-    var context = this
-    while (context is ContextWrapper) {
-        if (context is ComponentActivity) return context
-        context = context.baseContext
+        var context = this
+        while (context is ContextWrapper) {
+            if (context is ComponentActivity) return context
+            context = context.baseContext
+        }
+        throw IllegalStateException("No activity found...?")
     }
-    throw IllegalStateException("No activity found...?")
-}

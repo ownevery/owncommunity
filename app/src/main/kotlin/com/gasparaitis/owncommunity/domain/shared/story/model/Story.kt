@@ -1,19 +1,24 @@
 package com.gasparaitis.owncommunity.domain.shared.story.model
 
-import androidx.annotation.DrawableRes
+import com.gasparaitis.owncommunity.domain.shared.profile.model.Profile
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 
 data class Story(
     val id: String,
-    @DrawableRes val storyImage: Int,
-    @DrawableRes val profileImage: Int,
+    val profile: Profile,
     val isRead: Boolean,
+    val entryIndex: Int,
+    val entries: PersistentList<StoryEntry>,
 ) {
     companion object {
-        val EMPTY = Story(
-            id = "",
-            storyImage = 0,
-            profileImage = 0,
-            isRead = false,
-        )
+        val EMPTY =
+            Story(
+                id = "",
+                profile = Profile.EMPTY,
+                isRead = false,
+                entryIndex = 0,
+                entries = persistentListOf(),
+            )
     }
 }
