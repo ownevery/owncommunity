@@ -15,7 +15,7 @@ androidxHiltNavigationCompose = "1.1.0"
 coilCompose = "2.5.0"
 compose-bom = "2023.10.01"
 #noinspection GradleDependency until kotlin 1.9.22
-compose-compiler = "1.5.7"
+compose-compiler = "1.5.8"
 compose-destinations-core = "1.9.62"
 compose-destinations-ksp = "1.9.62"
 composeLintChecks = "1.2.0"
