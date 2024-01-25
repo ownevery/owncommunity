@@ -1,14 +1,18 @@
 package com.gasparaitis.owncommunity.presentation.story
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.gasparaitis.owncommunity.domain.shared.story.model.Story
 import com.gasparaitis.owncommunity.domain.shared.story.usecase.StoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.mutate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class StoryViewModel @Inject constructor(
@@ -25,7 +29,6 @@ class StoryViewModel @Inject constructor(
         val stories = storyUseCase.getStories()
         _uiState.update { state ->
             state.copy(
-                selectedTabIndex = state.selectedTabIndex,
                 stories = stories,
             )
         }
@@ -37,13 +40,19 @@ class StoryViewModel @Inject constructor(
             StoryState.OnStoryReplyBarClick -> onStoryReplyBarClick()
             is StoryState.OnStoryReplyQueryChange -> onStoryReplyQueryChange(event.query)
             StoryState.OnStoryReplySend -> onStoryReplySend()
-            is StoryState.OnTabSelected -> onTabSelected(event.index)
-            is StoryState.OnStoryGoBack -> onStoryGoBack(event.storyIndex, event.storyItemIndex)
+            is StoryState.OnPageSelected -> onPageSelected(event.index)
+            is StoryState.OnStoryGoBack ->
+                onStoryGoBack(
+                    event.storyIndex,
+                    event.scrollToPage,
+                )
+
             is StoryState.OnStoryGoForward ->
                 onStoryGoForward(
                     event.storyIndex,
-                    event.storyItemIndex,
+                    event.scrollToPage,
                 )
+
             StoryState.NavigateToProfileScreen -> {}
         }
     }
@@ -62,65 +71,50 @@ class StoryViewModel @Inject constructor(
 
     private fun onStoryGoBack(
         storyIndex: Int,
-        storyEntryIndex: Int
+        scrollToPage: suspend (Int) -> Unit,
     ) {
-        _uiState.update { state ->
-            val stories =
-                state.stories.mutate { storyList ->
-                    storyList.mapIndexed { index, story ->
-                        if (index == storyIndex) {
-                            story.copy(
-                                storyEntries =
-                                    story.storyEntries.mutate { storyEntryList ->
-                                        storyEntryList.mapIndexed { entryIndex, storyEntry ->
-                                            if (entryIndex == storyEntryIndex) {
-                                                storyEntry.copy(isSeen = false)
-                                            } else {
-                                                storyEntry
-                                            }
-                                        }
-                                    },
-                            )
-                        } else {
-                            story
-                        }
-                    }
-                }
-            state.copy(
-                stories = stories,
-            )
+        val story = _uiState.value.stories[storyIndex]
+        if (story.entryIndex == 0) {
+            viewModelScope.launch {
+                val previousPage = _uiState.value.currentPage.dec()
+                scrollToPage(previousPage)
+            }
+        } else {
+            _uiState.update { state ->
+                val stories =
+                    state.stories
+                        .updateStoryAtIndex(
+                            index = storyIndex,
+                            update = { it.copy(entryIndex = it.entryIndex.dec()) },
+                        )
+                state.copy(
+                    stories = stories,
+                )
+            }
         }
     }
 
     private fun onStoryGoForward(
         storyIndex: Int,
-        storyEntryIndex: Int
+        scrollToPage: suspend (Int) -> Unit,
     ) {
-        _uiState.update { state ->
-            val stories =
-                state.stories.mutate { storyList ->
-                    storyList.mapIndexed { index, story ->
-                        if (index == storyIndex) {
-                            story.copy(
-                                storyEntries =
-                                    story.storyEntries.mutate { storyEntryList ->
-                                        storyEntryList.mapIndexed { entryIndex, storyEntry ->
-                                            if (entryIndex == storyEntryIndex) {
-                                                storyEntry.copy(isSeen = true)
-                                            } else {
-                                                storyEntry
-                                            }
-                                        }
-                                    },
-                            )
-                        } else {
-                            story
-                        }
-                    }
-                }
-            state.copy(
-                stories = stories,
-            )
+        val story = _uiState.value.stories[storyIndex]
+        if (story.entries.size.dec() == story.entryIndex) {
+            viewModelScope.launch {
+                val nextPage = _uiState.value.currentPage.inc()
+                scrollToPage(nextPage)
+            }
+        } else {
+            _uiState.update { state ->
+                val stories =
+                    state.stories
+                        .updateStoryAtIndex(
+                            index = storyIndex,
+                        ) { it.copy(entryIndex = it.entryIndex.inc()) }
+                state.copy(
+                    stories = stories,
+                )
+            }
         }
     }
 
@@ -142,7 +136,25 @@ class StoryViewModel @Inject constructor(
     private fun onStoryReplySend() {
     }
 
-    private fun onTabSelected(index: Int) {
-        _uiState.update { it.copy(selectedTabIndex = index) }
+    private fun onPageSelected(index: Int) {
+        _uiState.update { state ->
+            val stories = state.stories.updateAllStories { story -> story.copy(entryIndex = 0) }
+            state.copy(
+                currentPage = index,
+                stories = stories,
+            )
+        }
     }
+
+    private fun PersistentList<Story>.updateStoryAtIndex(
+        index: Int,
+        update: (Story) -> Story,
+    ): PersistentList<Story> =
+        mutate { storyList ->
+            storyList[index] = update(storyList[index])
+        }
+
+    private fun PersistentList<Story>.updateAllStories(
+        update: (Story) -> Story,
+    ): PersistentList<Story> = mutate { it.replaceAll(update) }
 }

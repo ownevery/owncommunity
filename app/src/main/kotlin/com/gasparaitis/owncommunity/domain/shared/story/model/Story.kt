@@ -8,8 +8,8 @@ data class Story(
     val id: String,
     val profile: Profile,
     val isRead: Boolean,
-    val index: Int,
-    val storyEntries: PersistentList<StoryEntry>,
+    val entryIndex: Int,
+    val entries: PersistentList<StoryEntry>,
 ) {
     companion object {
         val EMPTY =
@@ -17,8 +17,8 @@ data class Story(
                 id = "",
                 profile = Profile.EMPTY,
                 isRead = false,
-                index = 0,
-                storyEntries = persistentListOf(),
+                entryIndex = 0,
+                entries = persistentListOf(),
             )
     }
 }

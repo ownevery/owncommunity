@@ -1,7 +1,6 @@
 package com.gasparaitis.owncommunity.presentation.story
 
 import android.graphics.drawable.Drawable
-import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -25,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -101,7 +99,7 @@ private fun StoryEventHandler(
             StoryState.OnStoryReplyBarClick -> {}
             is StoryState.OnStoryReplyQueryChange -> {}
             StoryState.OnStoryReplySend -> {}
-            is StoryState.OnTabSelected -> {}
+            is StoryState.OnPageSelected -> {}
             null -> {}
         }
         onEventHandled(event)
@@ -121,17 +119,13 @@ private fun StoryContent(
         StoryHorizontalPager(
             stories = state.stories,
             pagerState = pagerState,
-            onPageSelected = {},
+            onPageSelected = { onAction(StoryState.OnPageSelected(it)) },
             onProfileClick = { onAction(StoryState.OnProfileClick(it)) },
-            onBack = {
-                    storyIndex,
-                    storyItemIndex ->
-                onAction(StoryState.OnStoryGoBack(storyIndex, storyItemIndex))
+            onBack = { storyIndex, scrollToPage ->
+                onAction(StoryState.OnStoryGoBack(storyIndex, scrollToPage))
             },
-            onForward = {
-                    storyIndex,
-                    storyItemIndex ->
-                onAction(StoryState.OnStoryGoForward(storyIndex, storyItemIndex))
+            onForward = { storyIndex, scrollToPage ->
+                onAction(StoryState.OnStoryGoForward(storyIndex, scrollToPage))
             },
         )
     }
@@ -144,13 +138,16 @@ private fun StoryHorizontalPager(
     pagerState: PagerState,
     onPageSelected: (Int) -> Unit,
     onProfileClick: (Profile) -> Unit,
-    onBack: (Int, Int) -> Unit,
-    onForward: (Int, Int) -> Unit,
+    onBack: (storyIndex: Int, scrollToPage: suspend (Int) -> Unit) -> Unit,
+    onForward: (storyIndex: Int, scrollToPage: suspend (Int) -> Unit) -> Unit,
 ) {
+    val scrollToPage: suspend (Int) -> Unit = { page ->
+        pagerState.scrollToPage(page)
+    }
     HorizontalPager(
         modifier = Modifier.fillMaxSize(),
         state = pagerState,
-        beyondBoundsPageCount = 2,
+        beyondBoundsPageCount = 1,
     ) { index ->
         Box(
             modifier =
@@ -163,10 +160,11 @@ private fun StoryHorizontalPager(
                     ),
         ) {
             StoryView(
+                isFocused = index == pagerState.currentPage,
                 story = stories[index],
                 onProfileClick = { onProfileClick(stories[index].profile) },
-                onBack = { itemIndex -> onBack(index, itemIndex) },
-                onForward = { itemIndex -> onForward(index, itemIndex) },
+                onBack = { onBack(index, scrollToPage) },
+                onForward = { onForward(index, scrollToPage) },
             )
         }
     }
@@ -181,12 +179,12 @@ private fun StoryHorizontalPager(
 
 @Composable
 private fun StoryView(
+    isFocused: Boolean,
     story: Story,
     onProfileClick: () -> Unit,
-    onBack: (Int) -> Unit,
-    onForward: (Int) -> Unit,
+    onBack: () -> Unit,
+    onForward: () -> Unit,
 ) {
-    var index by remember { mutableIntStateOf(0) }
     var isPaused by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -203,9 +201,9 @@ private fun StoryView(
         ) {
             LinearIndicatorRow(
                 story = story,
-                currentIndex = index,
-                onAnimationEnd = { index = index.inc().coerceIn(0, story.storyEntries.size.dec()) },
+                isFocused = isFocused,
                 isPaused = isPaused,
+                onAnimationEnd = onForward,
             )
             StoryProfileRow(
                 story = story,
@@ -215,22 +213,13 @@ private fun StoryView(
         StoryViewItem(
             onHold = { isReleased ->
                 isPaused = !isReleased
-                Log.d("justas", "onHold($isReleased)")
             },
-            onFirstHalfTap = {
-                index = index.dec().coerceIn(0, story.storyEntries.size.dec())
-                onBack(index)
-                Log.d("justas", "onFirstHalfTap")
-            },
-            onSecondHalfTap = {
-                onForward(index)
-                index = index.inc().coerceIn(0, story.storyEntries.size.dec())
-                Log.d("justas", "onSecondHalfTap")
-            },
+            onFirstHalfTap = onBack,
+            onSecondHalfTap = onForward,
             drawable =
                 ContextCompat.getDrawable(
                     LocalContext.current,
-                    story.storyEntries[index].drawableResId,
+                    story.entries[story.entryIndex].drawableResId,
                 )!!,
         )
     }
@@ -350,9 +339,9 @@ private fun StoryViewItemBackgroundBox(
 @Composable
 private fun LinearIndicatorRow(
     story: Story,
-    currentIndex: Int,
-    onAnimationEnd: () -> Unit,
+    isFocused: Boolean,
     isPaused: Boolean,
+    onAnimationEnd: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -362,12 +351,12 @@ private fun LinearIndicatorRow(
                 .then(modifier),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        repeat(story.storyEntries.size) { index ->
+        repeat(story.entries.size) { index ->
             LinearIndicator(
                 modifier = Modifier.weight(1f),
                 onAnimationEnd = onAnimationEnd,
-                isActive = currentIndex == index,
-                isCompleted = story.storyEntries[index].isSeen,
+                isActive = isFocused && index == story.entryIndex,
+                isCompleted = index < story.entryIndex,
                 isPaused = isPaused,
             )
         }
@@ -377,12 +366,13 @@ private fun LinearIndicatorRow(
 @Composable
 private fun LinearIndicator(
     modifier: Modifier = Modifier,
-    durationMillis: Int = 5000,
-    onAnimationEnd: () -> Unit = {},
+    durationMillis: Int = 2500,
     isActive: Boolean = false,
     isCompleted: Boolean = false,
     isPaused: Boolean = false,
+    onAnimationEnd: () -> Unit = {},
 ) {
+    var isLaunched by remember { mutableStateOf(false) }
     val progress = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
 
@@ -403,9 +393,10 @@ private fun LinearIndicator(
         backgroundColor = Colors.DarkBlack,
         color = Colors.PureWhite,
         modifier =
-            modifier
+            Modifier
                 .padding(top = 12.dp, bottom = 12.dp)
-                .clip(RoundedCornerShape(12.dp)),
+                .clip(RoundedCornerShape(12.dp))
+                .then(modifier),
         progress =
             if (isCompleted) {
                 1.0f
@@ -416,19 +407,25 @@ private fun LinearIndicator(
             },
     )
     LaunchedEffect(key1 = isActive) {
-        if (isActive && isCompleted) {
-            onAnimationEnd()
-        } else if (isActive) {
+        if (isActive && !isCompleted) {
             launchAnimation()
         } else {
             progress.snapTo(0f)
         }
     }
     LaunchedEffect(key1 = isPaused) {
+        @Suppress("KotlinConstantConditions")
         if (isActive && isPaused) {
             progress.stop()
-        } else if (isActive && !isPaused) {
+        } else if (!isLaunched) {
+            isLaunched = true
+        } else if (isActive && !isPaused && isLaunched) {
             launchAnimation()
+        }
+    }
+    LaunchedEffect(key1 = progress.value) {
+        if (progress.value >= 1.0f) {
+            onAnimationEnd()
         }
     }
 }

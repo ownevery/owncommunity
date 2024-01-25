@@ -15,7 +15,7 @@ class StoryUseCase {
         private val story1 =
             Story.EMPTY.copy(
                 id = UUID.randomUUID().toString(),
-                storyEntries =
+                entries =
                     persistentListOf(
                         StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_1),
                         StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_2),
@@ -37,7 +37,7 @@ class StoryUseCase {
         private val story2 =
             Story.EMPTY.copy(
                 id = UUID.randomUUID().toString(),
-                storyEntries =
+                entries =
                     persistentListOf(
                         StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_7),
                         StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_8),
@@ -56,7 +56,7 @@ class StoryUseCase {
         private val story3 =
             Story.EMPTY.copy(
                 id = UUID.randomUUID().toString(),
-                storyEntries =
+                entries =
                     persistentListOf(
                         StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_10),
                         StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_11),
@@ -76,7 +76,7 @@ class StoryUseCase {
         private val story4 =
             Story.EMPTY.copy(
                 id = UUID.randomUUID().toString(),
-                storyEntries =
+                entries =
                     persistentListOf(
                         StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_14),
                         StoryEntry.EMPTY.copy(drawableResId = R.drawable.demo_profile_15),
