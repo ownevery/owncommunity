@@ -1,5 +1,5 @@
 [versions]
-accompanistDrawablepainter = "0.32.0"
+accompanistDrawablepainter = "0.34.0"
 build-namespace = "com.gasparaitis.owncommunity"
 build-code = "1"
 build-name = "0.0.1"
