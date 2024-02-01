@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -114,7 +117,9 @@ private fun StoryContent(
 ) {
     val pagerState = rememberPagerState { state.stories.size }
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier =
+            Modifier
+                .fillMaxSize(),
     ) {
         StoryHorizontalPager(
             stories = state.stories,
@@ -196,7 +201,8 @@ private fun StoryView(
             modifier =
                 Modifier
                     .zIndex(3f)
-                    .padding(top = 8.dp)
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .padding(top = 4.dp)
                     .padding(horizontal = 24.dp),
         ) {
             LinearIndicatorRow(

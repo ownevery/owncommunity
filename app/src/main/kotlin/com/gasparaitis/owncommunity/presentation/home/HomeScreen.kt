@@ -18,7 +18,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,7 +25,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -47,19 +45,21 @@ import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDesti
 import com.gasparaitis.owncommunity.presentation.destinations.StoryScreenDestination
 import com.gasparaitis.owncommunity.presentation.main.bottomnavigation.BottomNavigationState
 import com.gasparaitis.owncommunity.presentation.main.bottomnavigation.BottomNavigationViewModel
+import com.gasparaitis.owncommunity.presentation.shared.composables.button.ChatIconButton
 import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostView
 import com.gasparaitis.owncommunity.presentation.shared.composables.story.StoryProfileImage
 import com.gasparaitis.owncommunity.presentation.utils.extensions.componentActivity
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
-import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
 import com.gasparaitis.owncommunity.presentation.utils.theme.TextStyles
 import com.gasparaitis.owncommunity.presentation.utils.theme.slightBottomDarkGradientBrush
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.popUpTo
 import kotlinx.collections.immutable.ImmutableList
 
-@Destination(start = true)
+@Destination
+@RootNavGraph(start = true)
 @Composable
 fun HomeScreen(
     navigator: DestinationsNavigator,
@@ -95,7 +95,7 @@ private fun HomeEventHandler(
 ) {
     LaunchedEffect(event) {
         when (event) {
-            HomeState.NavigateToAlertListScreen -> {
+            HomeState.NavigateToChatListScreen -> {
                 navigator.navigate(AlertListScreenDestination) {
                     popUpTo(HomeScreenDestination) { saveState = true }
                 }
@@ -191,7 +191,7 @@ private fun TopRow(
         HomeTopRowTitle(
             title = stringResource(id = R.string.home_title),
         )
-        HomeTopRowAlertIconButton(
+        ChatIconButton(
             isBadgeEnabled = isAlertBadgeEnabled,
             onClick = onAlertIconClick,
         )
@@ -204,33 +204,6 @@ private fun HomeTopRowTitle(title: String) {
         text = title,
         style = TextStyles.title,
     )
-}
-
-@Composable
-private fun HomeTopRowAlertIconButton(
-    onClick: () -> Unit,
-    isBadgeEnabled: Boolean
-) {
-    Box(
-        modifier = Modifier.noRippleClickable(onClick),
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_message),
-            tint = Colors.PureWhite,
-            contentDescription = "Favorite",
-        )
-        if (!isBadgeEnabled) return@Box
-        Icon(
-            modifier =
-                Modifier
-                    .size(10.dp)
-                    .zIndex(1f)
-                    .align(Alignment.TopEnd),
-            painter = painterResource(id = R.drawable.ic_alert_badge),
-            tint = Color.Unspecified,
-            contentDescription = "Alert badge",
-        )
-    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)

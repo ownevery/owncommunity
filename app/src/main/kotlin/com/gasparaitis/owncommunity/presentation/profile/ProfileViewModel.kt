@@ -1,11 +1,8 @@
-package com.gasparaitis.owncommunity.presentation.home
+package com.gasparaitis.owncommunity.presentation.profile
 
 import androidx.lifecycle.ViewModel
-import com.gasparaitis.owncommunity.domain.alerts.usecase.AlertListUseCase
 import com.gasparaitis.owncommunity.domain.shared.post.model.Post
-import com.gasparaitis.owncommunity.domain.shared.post.usecase.PostUseCase
-import com.gasparaitis.owncommunity.domain.shared.story.model.Story
-import com.gasparaitis.owncommunity.domain.shared.story.usecase.StoryUseCase
+import com.gasparaitis.owncommunity.domain.shared.profile.usecase.ProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.collections.immutable.PersistentList
@@ -16,36 +13,31 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
-    private val alertListUseCase: AlertListUseCase,
-    private val postUseCase: PostUseCase,
-    private val storyUseCase: StoryUseCase,
+class ProfileViewModel @Inject constructor(
+    private val profileUseCase: ProfileUseCase,
 ) : ViewModel() {
-    private val _uiState: MutableStateFlow<HomeState> = MutableStateFlow(HomeState.EMPTY)
-    val uiState: StateFlow<HomeState> = _uiState.asStateFlow()
+    private val _uiState: MutableStateFlow<ProfileState> = MutableStateFlow(ProfileState.EMPTY)
+    val uiState: StateFlow<ProfileState> = _uiState.asStateFlow()
 
     init {
         onCreated()
     }
 
     private fun onCreated() {
-        val areAllAlertsRead = alertListUseCase.getAreAllItemsRead()
-        val posts = postUseCase.getHomePosts()
-        val stories = storyUseCase.getStories()
+        val profile = profileUseCase.getMyProfile()
         _uiState.update { state ->
             state.copy(
-                areAllAlertsRead = areAllAlertsRead,
-                posts = posts,
-                stories = stories,
+                profile = profile,
             )
         }
     }
 
-    fun onEvent(event: HomeState.Event) {
+    fun onEvent(event: ProfileState.Event) {
         when (event) {
-            is HomeState.OnStoryClick -> onStoryClick(event.item)
-            HomeState.OnAlertIconClick -> onAlertIconClick()
-            is HomeState.OnPostEvent -> {
+            ProfileState.OnBookmarkButtonClick -> onBookmarkButtonClick()
+            ProfileState.OnChatButtonClick -> onChatButtonClick()
+            ProfileState.OnEditProfileButtonClick -> onEditProfileButtonClick()
+            is ProfileState.OnPostEvent -> {
                 when (event.postEvent) {
                     is Post.OnAuthorClick -> onPostAuthorClick(event.postEvent.item)
                     is Post.OnBodyClick -> onPostBodyClick()
@@ -55,14 +47,16 @@ class HomeViewModel @Inject constructor(
                     is Post.OnShareClick -> onPostShareClick(event.postEvent.item)
                 }
             }
-            HomeState.NavigateToChatListScreen,
-            HomeState.NavigateToPostAuthorProfileScreen,
-            HomeState.NavigateToPostScreen,
-            HomeState.NavigateToStoryListScreen -> {}
+            is ProfileState.OnTabSelected -> {}
+            ProfileState.NavigateToBookmarksScreen -> {}
+            ProfileState.NavigateToChatListScreen -> {}
+            ProfileState.NavigateToEditProfileScreen -> {}
+            ProfileState.NavigateToPostAuthorProfileScreen -> {}
+            ProfileState.NavigateToPostScreen -> {}
         }
     }
 
-    fun onEventHandled(event: HomeState.Event?) {
+    fun onEventHandled(event: ProfileState.Event?) {
         _uiState.update { state ->
             if (state.event == event) {
                 state.copy(
@@ -74,33 +68,19 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun onAlertIconClick() {
-        _uiState.update { state ->
-            state.copy(
-                event = HomeState.NavigateToChatListScreen,
-            )
-        }
+    private fun onEditProfileButtonClick() {
     }
 
-    private fun onStoryClick(story: Story) {
-        _uiState.update { state ->
-            val stories =
-                state.stories.updateStory(
-                    story.copy(
-                        isRead = true,
-                    ),
-                )
-            state.copy(
-                event = HomeState.NavigateToStoryListScreen,
-                stories = stories,
-            )
-        }
+    private fun onChatButtonClick() {
+    }
+
+    private fun onBookmarkButtonClick() {
     }
 
     private fun onPostBodyClick() {
         _uiState.update { state ->
             state.copy(
-                event = HomeState.NavigateToPostScreen,
+                event = ProfileState.NavigateToPostScreen,
             )
         }
     }
@@ -108,7 +88,7 @@ class HomeViewModel @Inject constructor(
     private fun onPostAuthorClick(item: Post) {
         _uiState.update { state ->
             state.copy(
-                event = HomeState.NavigateToPostAuthorProfileScreen,
+                event = ProfileState.NavigateToPostAuthorProfileScreen,
             )
         }
     }
@@ -123,14 +103,14 @@ class HomeViewModel @Inject constructor(
                     post.likeCount.inc()
                 }
             val posts =
-                state.posts.updatePost(
+                state.latestPosts.updatePost(
                     post.copy(
                         isLiked = isLiked,
                         likeCount = likeCount,
                     ),
                 )
             state.copy(
-                posts = posts,
+                latestPosts = posts,
             )
         }
     }
@@ -138,7 +118,7 @@ class HomeViewModel @Inject constructor(
     private fun onPostCommentClick(post: Post) {
         _uiState.update { state ->
             state.copy(
-                event = HomeState.NavigateToPostScreen,
+                event = ProfileState.NavigateToPostScreen,
             )
         }
     }
@@ -153,14 +133,14 @@ class HomeViewModel @Inject constructor(
                     post.shareCount.inc()
                 }
             val posts =
-                state.posts.updatePost(
+                state.latestPosts.updatePost(
                     post.copy(
                         isShared = isShared,
                         shareCount = shareCount,
                     ),
                 )
             state.copy(
-                posts = posts,
+                latestPosts = posts,
             )
         }
     }
@@ -168,13 +148,13 @@ class HomeViewModel @Inject constructor(
     private fun onPostBookmarkClick(post: Post) {
         _uiState.update { state ->
             val posts =
-                state.posts.updatePost(
+                state.latestPosts.updatePost(
                     post.copy(
                         isBookmarked = post.isBookmarked.not(),
                     ),
                 )
             state.copy(
-                posts = posts,
+                latestPosts = posts,
             )
         }
     }
@@ -184,14 +164,6 @@ class HomeViewModel @Inject constructor(
             val index = list.indexOfFirst { item -> item.id == post.id }
             if (index != -1) {
                 list[index] = post
-            }
-        }
-
-    private fun PersistentList<Story>.updateStory(story: Story): PersistentList<Story> =
-        mutate { list ->
-            val index = list.indexOfFirst { item -> item.id == story.id }
-            if (index != -1) {
-                list[index] = story
             }
         }
 }
