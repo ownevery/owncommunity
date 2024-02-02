@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,7 +31,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -47,9 +47,10 @@ import com.gasparaitis.owncommunity.presentation.main.bottomnavigation.BottomNav
 import com.gasparaitis.owncommunity.presentation.main.bottomnavigation.BottomNavigationViewModel
 import com.gasparaitis.owncommunity.presentation.shared.composables.button.ChatIconButton
 import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostView
-import com.gasparaitis.owncommunity.presentation.shared.composables.story.StoryProfileImage
+import com.gasparaitis.owncommunity.presentation.shared.composables.story.CircleProfileImage
 import com.gasparaitis.owncommunity.presentation.utils.extensions.componentActivity
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
+import com.gasparaitis.owncommunity.presentation.utils.preview.ScreenPreview
 import com.gasparaitis.owncommunity.presentation.utils.theme.TextStyles
 import com.gasparaitis.owncommunity.presentation.utils.theme.slightBottomDarkGradientBrush
 import com.ramcosta.composedestinations.annotation.Destination
@@ -259,14 +260,15 @@ private fun HomeStoryPagerItem(
             itemHeight = itemHeight,
             image = storyImage,
         )
-        StoryProfileImage(
+        CircleProfileImage(
             modifier =
                 Modifier
                     .align(Alignment.BottomCenter)
                     .zIndex(2f),
+            padding = PaddingValues(bottom = 8.dp),
             onClick = onClick,
             image = profileImage,
-            shouldShowBorder = !isStoryRead,
+            isBorderShown = !isStoryRead,
         )
         HomeStoryHorizontalPagerItemDarkGradientBox(
             modifier = Modifier.zIndex(1f),
@@ -311,7 +313,7 @@ private fun HomeStoryHorizontalPagerItemDarkGradientBox(
     )
 }
 
-@Preview(showSystemUi = true)
+@ScreenPreview
 @Composable
 private fun ScreenPreview() {
     HomeContent(

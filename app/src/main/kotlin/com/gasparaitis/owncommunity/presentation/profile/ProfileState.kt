@@ -13,6 +13,7 @@ data class ProfileState(
     val popularPosts: PersistentList<Post>,
     val profile: Profile,
     val replies: PersistentList<Comment>,
+    val selectedTabIndex: Int,
 ) {
     companion object {
         val EMPTY =
@@ -23,6 +24,7 @@ data class ProfileState(
                 likedPosts = persistentListOf(),
                 popularPosts = persistentListOf(),
                 replies = persistentListOf(),
+                selectedTabIndex = 0,
             )
     }
 

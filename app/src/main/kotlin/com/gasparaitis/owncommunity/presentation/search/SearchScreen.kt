@@ -6,11 +6,9 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,18 +24,12 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -47,13 +39,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -64,9 +53,10 @@ import com.gasparaitis.owncommunity.domain.shared.profile.model.Profile
 import com.gasparaitis.owncommunity.presentation.destinations.PostScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.SearchScreenDestination
+import com.gasparaitis.owncommunity.presentation.shared.composables.button.FollowButton
 import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostView
 import com.gasparaitis.owncommunity.presentation.shared.composables.search.CustomTextField
-import com.gasparaitis.owncommunity.presentation.utils.extensions.customTabIndicatorOffset
+import com.gasparaitis.owncommunity.presentation.shared.composables.tab.TabView
 import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableFollowerCount
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
@@ -158,6 +148,11 @@ private fun SearchContent(
             onSearchQueryChange = { onAction(SearchState.OnSearchBarQueryChange(it)) },
         )
         TabView(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp)
+                    .padding(horizontal = 12.dp),
             selectedTabIndex = state.selectedTabIndex,
             onTabSelected = { tabIndex ->
                 scope.launch {
@@ -332,62 +327,12 @@ private fun ProfileView(
             }
             Spacer(Modifier.weight(1f))
             FollowButton(
+                modifier = Modifier.size(height = 28.dp, width = 96.dp),
                 isFollowed = profile.isFollowed,
                 onClick = onFollowButtonClick,
             )
         }
         Spacer(Modifier.height(16.dp))
-    }
-}
-
-@Composable
-private fun FollowButton(
-    isFollowed: Boolean,
-    onClick: () -> Unit,
-) {
-    if (isFollowed) {
-        Button(
-            modifier = Modifier.size(height = 28.dp, width = 96.dp),
-            onClick = onClick,
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor = Colors.SocialPink,
-                    contentColor = Colors.PureWhite,
-                ),
-            contentPadding = PaddingValues(),
-        ) {
-            Text(
-                text = stringResource(R.string.follow_button_follow),
-                style =
-                    TextStyles.secondary.copy(
-                        color = Colors.PureWhite,
-                        fontWeight = FontWeight.Bold,
-                        lineHeight = 16.sp,
-                    ),
-            )
-        }
-    } else {
-        Button(
-            modifier = Modifier.size(height = 28.dp, width = 96.dp),
-            onClick = onClick,
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor = Colors.DarkBlack,
-                    contentColor = Colors.PureWhite,
-                ),
-            border = BorderStroke(width = 1.dp, color = Colors.LightGray),
-            contentPadding = PaddingValues(),
-        ) {
-            Text(
-                text = stringResource(R.string.follow_button_following),
-                style =
-                    TextStyles.secondary.copy(
-                        color = Colors.PureWhite,
-                        fontWeight = FontWeight.Bold,
-                        lineHeight = 16.sp,
-                    ),
-            )
-        }
     }
 }
 
@@ -437,83 +382,6 @@ private fun SearchBarView(
                     contentDescription = "Search",
                 )
             },
-        )
-    }
-}
-
-@Composable
-private fun TabView(
-    selectedTabIndex: Int,
-    tabs: PersistentList<String>,
-    onTabSelected: (Int) -> Unit
-) {
-    val density = LocalDensity.current
-    val tabWidths =
-        remember {
-            val tabWidthStateList = mutableStateListOf<Dp>()
-            repeat(tabs.size) {
-                tabWidthStateList.add(0.dp)
-            }
-            tabWidthStateList
-        }
-    TabRow(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp)
-                .padding(horizontal = 12.dp),
-        selectedTabIndex = selectedTabIndex,
-        divider = {},
-        indicator = { tabPositions ->
-            TabRowDefaults.Indicator(
-                modifier =
-                    Modifier.customTabIndicatorOffset(
-                        currentTabPosition = tabPositions[selectedTabIndex],
-                        tabWidth = tabWidths[selectedTabIndex],
-                    ),
-                color = Colors.SocialBlue,
-                height = 4.dp,
-            )
-        },
-    ) {
-        tabs.forEachIndexed { index, title ->
-            Tab(
-                selected = selectedTabIndex == index,
-                onClick = { onTabSelected(index) },
-                text = {
-                    Text(
-                        text = title,
-                        style =
-                            TextStyles.secondary.copy(
-                                fontWeight =
-                                    if (selectedTabIndex == index) {
-                                        FontWeight.Bold
-                                    } else {
-                                        FontWeight.Normal
-                                    },
-                                lineHeight = 16.sp,
-                            ),
-                        onTextLayout = { textLayoutResult ->
-                            tabWidths[index] = with(density) { textLayoutResult.size.width.toDp() }
-                        },
-                    )
-                },
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun FollowButtonPreview() {
-    Row {
-        FollowButton(
-            isFollowed = false,
-            onClick = {},
-        )
-        FollowButton(
-            isFollowed = true,
-            onClick = {},
         )
     }
 }

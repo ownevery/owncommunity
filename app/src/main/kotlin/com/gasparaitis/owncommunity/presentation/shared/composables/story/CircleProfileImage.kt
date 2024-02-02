@@ -2,6 +2,7 @@ package com.gasparaitis.owncommunity.presentation.shared.composables.story
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -10,17 +11,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
 import com.gasparaitis.owncommunity.presentation.utils.theme.defaultGradientBrush
 
 @Composable
-fun StoryProfileImage(
-    onClick: () -> Unit,
+fun CircleProfileImage(
     image: Painter,
-    shouldShowBorder: Boolean,
     modifier: Modifier = Modifier,
+    padding: PaddingValues = PaddingValues(0.dp),
+    size: Dp = 40.dp,
+    isBorderShown: Boolean = true,
+    onClick: () -> Unit = {},
 ) {
     val gradientBorder =
         Modifier
@@ -31,12 +35,12 @@ fun StoryProfileImage(
     Image(
         modifier =
             Modifier
-                .padding(bottom = 8.dp)
-                .then(if (shouldShowBorder) gradientBorder else Modifier)
+                .padding(padding)
+                .then(if (isBorderShown) gradientBorder else Modifier)
                 .padding(2.dp)
-                .size(40.dp)
+                .size(size)
                 .clip(CircleShape)
-                .then(if (shouldShowBorder) blackBorder else Modifier)
+                .then(if (isBorderShown) blackBorder else Modifier)
                 .then(modifier)
                 .noRippleClickable(onClick),
         contentScale = ContentScale.Crop,

@@ -29,7 +29,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.toUpperCase
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,6 +39,7 @@ import com.gasparaitis.owncommunity.presentation.destinations.PostScreenDestinat
 import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
 import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableTimeAgo
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
+import com.gasparaitis.owncommunity.presentation.utils.preview.ScreenPreview
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
 import com.gasparaitis.owncommunity.presentation.utils.theme.TextStyles
 import com.ramcosta.composedestinations.annotation.Destination
@@ -256,9 +256,9 @@ private fun AlertListItemDivider() {
     )
 }
 
-@Preview
+@ScreenPreview
 @Composable
-private fun AlertListScreenContentPreview() {
+private fun ScreenPreview() {
     AlertListScreenContent(
         state = AlertListState.EMPTY.copy(alertMap = AlertListUseCase().getAlerts()),
         lazyListState = rememberLazyListState(),
