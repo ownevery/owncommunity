@@ -50,7 +50,7 @@ import com.gasparaitis.owncommunity.domain.shared.story.model.Story
 import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.StoryScreenDestination
 import com.gasparaitis.owncommunity.presentation.shared.composables.story.CircleProfileImage
-import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableFollowerCount
+import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableFollowerCountWithText
 import com.gasparaitis.owncommunity.presentation.utils.extensions.verticalBackgroundGradientBrush
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
 import com.gasparaitis.owncommunity.presentation.utils.modifier.pagerCubeTransition
@@ -308,7 +308,7 @@ private fun StoryProfileRow(
                     ),
             )
             Text(
-                text = story.profile.followerCount.humanReadableFollowerCount,
+                text = story.profile.followerCount.humanReadableFollowerCountWithText,
                 style =
                     TextStyles.secondary.copy(
                         color = Colors.SocialWhite,

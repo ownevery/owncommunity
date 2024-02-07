@@ -57,7 +57,7 @@ import com.gasparaitis.owncommunity.presentation.shared.composables.button.Follo
 import com.gasparaitis.owncommunity.presentation.shared.composables.post.PostView
 import com.gasparaitis.owncommunity.presentation.shared.composables.search.CustomTextField
 import com.gasparaitis.owncommunity.presentation.shared.composables.tab.TabView
-import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableFollowerCount
+import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableFollowerCountWithText
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
 import com.gasparaitis.owncommunity.presentation.utils.theme.Colors
 import com.gasparaitis.owncommunity.presentation.utils.theme.TextStyles
@@ -316,7 +316,7 @@ private fun ProfileView(
                             ),
                     )
                     Text(
-                        text = profile.followerCount.humanReadableFollowerCount,
+                        text = profile.followerCount.humanReadableFollowerCountWithText,
                         style =
                             TextStyles.secondary.copy(
                                 color = Colors.SocialWhite,

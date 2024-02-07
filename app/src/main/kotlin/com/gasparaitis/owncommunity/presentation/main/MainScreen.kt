@@ -18,9 +18,11 @@ import androidx.navigation.compose.rememberNavController
 import com.gasparaitis.owncommunity.presentation.NavGraphs
 import com.gasparaitis.owncommunity.presentation.appCurrentDestinationAsState
 import com.gasparaitis.owncommunity.presentation.destinations.AlertListScreenDestination
+import com.gasparaitis.owncommunity.presentation.destinations.BookmarkListScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.ChatListScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.CreateScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.Destination
+import com.gasparaitis.owncommunity.presentation.destinations.EditProfileScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.HomeScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.PostScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
@@ -95,6 +97,8 @@ private fun isBottomNavigationBarShown(destination: Destination?) =
         ProfileScreenDestination -> true
         SearchScreenDestination -> true
         StoryScreenDestination -> true
+        BookmarkListScreenDestination -> true
+        EditProfileScreenDestination -> true
         null -> true
     }
 
@@ -109,5 +113,7 @@ private fun scaffoldContentWindowInsets(destination: Destination?): WindowInsets
         ProfileScreenDestination -> WindowInsets.captionBar.add(WindowInsets.navigationBars)
         SearchScreenDestination -> ScaffoldDefaults.contentWindowInsets
         StoryScreenDestination -> WindowInsets(0, 0, 0, 0)
+        BookmarkListScreenDestination -> ScaffoldDefaults.contentWindowInsets
+        EditProfileScreenDestination -> ScaffoldDefaults.contentWindowInsets
         null -> ScaffoldDefaults.contentWindowInsets
     }

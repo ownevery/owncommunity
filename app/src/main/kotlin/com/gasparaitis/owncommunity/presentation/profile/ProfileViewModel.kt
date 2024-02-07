@@ -2,6 +2,7 @@ package com.gasparaitis.owncommunity.presentation.profile
 
 import androidx.lifecycle.ViewModel
 import com.gasparaitis.owncommunity.domain.shared.post.model.Post
+import com.gasparaitis.owncommunity.domain.shared.post.usecase.PostUseCase
 import com.gasparaitis.owncommunity.domain.shared.profile.usecase.ProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.update
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val profileUseCase: ProfileUseCase,
+    private val postUseCase: PostUseCase,
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<ProfileState> = MutableStateFlow(ProfileState.EMPTY)
     val uiState: StateFlow<ProfileState> = _uiState.asStateFlow()
@@ -25,9 +27,15 @@ class ProfileViewModel @Inject constructor(
 
     private fun onCreated() {
         val profile = profileUseCase.getMyProfile()
+        val latestPosts = postUseCase.getLatestPosts()
+        val likedPosts = postUseCase.getHomePosts()
+        val popularPosts = postUseCase.getTrendingPosts()
         _uiState.update { state ->
             state.copy(
                 profile = profile,
+                latestPosts = latestPosts,
+                likedPosts = likedPosts,
+                popularPosts = popularPosts,
             )
         }
     }
@@ -47,7 +55,7 @@ class ProfileViewModel @Inject constructor(
                     is Post.OnShareClick -> onPostShareClick(event.postEvent.item)
                 }
             }
-            is ProfileState.OnTabSelected -> {}
+            is ProfileState.OnTabSelected -> onTabSelected(event.index)
             ProfileState.NavigateToBookmarksScreen -> {}
             ProfileState.NavigateToChatListScreen -> {}
             ProfileState.NavigateToEditProfileScreen -> {}
@@ -68,6 +76,10 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    private fun onTabSelected(index: Int) {
+        _uiState.update { it.copy(selectedTabIndex = index) }
+    }
+
     private fun onEditProfileButtonClick() {
     }
 
@@ -75,6 +87,11 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun onBookmarkButtonClick() {
+        _uiState.update { state ->
+            state.copy(
+                event = ProfileState.NavigateToBookmarksScreen,
+            )
+        }
     }
 
     private fun onPostBodyClick() {
