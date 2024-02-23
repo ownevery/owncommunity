@@ -1,4 +1,5 @@
 [versions]
+androidDocumentationPlugin = "1.9.10"
 build-namespace = "com.gasparaitis.owncommunity"
 build-code = "1"
 build-name = "0.0.1"
@@ -21,6 +22,7 @@ compose-destinations-core = "1.9.62"
 compose-destinations-ksp = "1.9.62"
 composeLintChecks = "1.2.0"
 core-ktx = "1.12.0"
+dokka = "1.9.10"
 gms = "4.4.0"
 hilt = "2.48.1"
 hiltExt = "1.1.0"
@@ -40,6 +42,7 @@ retrofit = "2.9.0"
 
 [libraries]
 accompanist-drawablepainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanistDrawablepainter" }
+dokka-android = { module = "org.jetbrains.dokka:android-documentation-plugin", version.ref = "dokka" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigationCompose" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle-runtime-ktx" }
 androidx-palette = { module = "androidx.palette:palette", version.ref = "palette" }
@@ -69,6 +72,7 @@ material3 = { group = "androidx.compose.material3", name = "material3" }
 
 [plugins]
 com-android-application = { id = "com.android.application", version.ref = "agp" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 gms = { id = "com.google.gms.google-services", version.ref = "gms" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
