@@ -32,7 +32,7 @@ jobs:
             uses: r0adkll/upload-google-play@v1
             with:
                 serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-                packageName: com.gasparaitis.owncommunity
+                packageName: com.gasparaiciukas.owncommunity
                 releaseFiles: ${{ github.workspace }}/app/build/outputs/bundle/release/app-release.aab
                 track: internal
                 status: completed
