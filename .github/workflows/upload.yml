@@ -31,8 +31,8 @@ jobs:
           - name: Upload Android Release to Play Store
             uses: r0adkll/upload-google-play@v1
             with:
-                serviceAccountJsonPlainText: ${{ secrets.GOOGLE_SERVICES_JSON }}
-                packageName: dk.tv2.vejr
+                serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+                packageName: com.gasparaitis.owncommunity
                 releaseFiles: ${{ github.workspace }}/app/build/outputs/bundle/release/app-release.aab
                 track: internal
                 status: completed
