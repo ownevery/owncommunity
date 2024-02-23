@@ -1,7 +1,9 @@
 package com.gasparaitis.owncommunity.presentation.main.bottomnavigation
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -30,9 +32,10 @@ fun BottomNavigationBar(
     NavigationBar(
         modifier =
             Modifier
-                .height(64.dp)
+                .height(84.dp)
                 .then(modifier),
         containerColor = Colors.PureBlack,
+        windowInsets = WindowInsets.navigationBars,
     ) {
         BottomNavigationDestination.entries.forEach { destination ->
             NavigationBarItem(

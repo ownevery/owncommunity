@@ -1,5 +1,5 @@
 [versions]
-accompanistDrawablepainter = "0.32.0"
+androidDocumentationPlugin = "1.9.10"
 build-namespace = "com.gasparaitis.owncommunity"
 build-code = "1"
 build-name = "0.0.1"
@@ -7,10 +7,12 @@ build-testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 build-sdk-min = "24"
 build-sdk-compile = "34"
 build-sdk-target = "34"
+playServicesOssLicenses = "17.0.1"
+project-name = "owncommunity"
 
+accompanistDrawablepainter = "0.32.0"
 activity-compose = "1.8.2"
 agp = "8.2.1"
-androidx-test-ext-junit = "1.1.5"
 androidxHiltNavigationCompose = "1.1.0"
 coilCompose = "2.5.0"
 compose-bom = "2023.10.01"
@@ -20,7 +22,7 @@ compose-destinations-core = "1.9.62"
 compose-destinations-ksp = "1.9.62"
 composeLintChecks = "1.2.0"
 core-ktx = "1.12.0"
-espresso-core = "3.5.1"
+dokka = "1.9.10"
 gms = "4.4.0"
 hilt = "2.48.1"
 hiltExt = "1.1.0"
@@ -34,11 +36,13 @@ ktlintGradle = "12.1.0"
 lifecycle-runtime-ktx = "2.7.0"
 material = "1.5.4"
 mockk = "1.13.3"
+ossLicenses = "0.10.6"
 palette = "1.0.0"
 retrofit = "2.9.0"
 
 [libraries]
 accompanist-drawablepainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanistDrawablepainter" }
+dokka-android = { module = "org.jetbrains.dokka:android-documentation-plugin", version.ref = "dokka" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigationCompose" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle-runtime-ktx" }
 androidx-palette = { module = "androidx.palette:palette", version.ref = "palette" }
@@ -48,37 +52,34 @@ hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 hilt-ext-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltExt" }
-hilt-ext-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltExt" }
-compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "compose-compiler" }
 compose-destinations-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "compose-destinations-core" }
 compose-destinations-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "compose-destinations-ksp" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
-mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+play-services-oss-licenses = { module = "com.google.android.gms:play-services-oss-licenses", version.ref = "playServicesOssLicenses" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 ui = { group = "androidx.compose.ui", name = "ui" }
 ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 material = { module = "androidx.compose.material:material", version.ref = "material" }
 material3 = { group = "androidx.compose.material3", name = "material3" }
 
 [plugins]
 com-android-application = { id = "com.android.application", version.ref = "agp" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 gms = { id = "com.google.gms.google-services", version.ref = "gms" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktlint-gradle = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle" }
+oss-licenses = { id = "com.google.android.gms.oss-licenses-plugin", version.ref = "ossLicenses" }
+
 
 [bundles]
 

@@ -10,10 +10,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -45,8 +49,8 @@ import com.gasparaitis.owncommunity.domain.shared.profile.model.Profile
 import com.gasparaitis.owncommunity.domain.shared.story.model.Story
 import com.gasparaitis.owncommunity.presentation.destinations.ProfileScreenDestination
 import com.gasparaitis.owncommunity.presentation.destinations.StoryScreenDestination
-import com.gasparaitis.owncommunity.presentation.shared.composables.story.StoryProfileImage
-import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableFollowerCount
+import com.gasparaitis.owncommunity.presentation.shared.composables.story.CircleProfileImage
+import com.gasparaitis.owncommunity.presentation.utils.extensions.humanReadableFollowerCountWithText
 import com.gasparaitis.owncommunity.presentation.utils.extensions.verticalBackgroundGradientBrush
 import com.gasparaitis.owncommunity.presentation.utils.modifier.noRippleClickable
 import com.gasparaitis.owncommunity.presentation.utils.modifier.pagerCubeTransition
@@ -114,7 +118,9 @@ private fun StoryContent(
 ) {
     val pagerState = rememberPagerState { state.stories.size }
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier =
+            Modifier
+                .fillMaxSize(),
     ) {
         StoryHorizontalPager(
             stories = state.stories,
@@ -196,7 +202,8 @@ private fun StoryView(
             modifier =
                 Modifier
                     .zIndex(3f)
-                    .padding(top = 8.dp)
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .padding(top = 4.dp)
                     .padding(horizontal = 24.dp),
         ) {
             LinearIndicatorRow(
@@ -278,10 +285,15 @@ private fun StoryProfileRow(
                 .noRippleClickable { onClick() },
         verticalAlignment = Alignment.Top,
     ) {
-        StoryProfileImage(
+        CircleProfileImage(
+            modifier =
+                Modifier
+                    .align(Alignment.CenterVertically)
+                    .zIndex(2f),
+            padding = PaddingValues(bottom = 8.dp),
             onClick = onClick,
             image = painterResource(id = story.profile.profileImage),
-            shouldShowBorder = !story.isRead,
+            isBorderShown = !story.isRead,
         )
         Column(
             modifier = Modifier.padding(start = 8.dp),
@@ -296,7 +308,7 @@ private fun StoryProfileRow(
                     ),
             )
             Text(
-                text = story.profile.followerCount.humanReadableFollowerCount,
+                text = story.profile.followerCount.humanReadableFollowerCountWithText,
                 style =
                     TextStyles.secondary.copy(
                         color = Colors.SocialWhite,

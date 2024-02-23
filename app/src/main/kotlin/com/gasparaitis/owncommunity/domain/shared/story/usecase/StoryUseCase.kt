@@ -31,6 +31,10 @@ class StoryUseCase {
                         displayName = "Michelle Ogilvy",
                         followerCount = 1_435,
                         isFollowed = false,
+                        coverImage = 0,
+                        followingCount = 0,
+                        locationName = "",
+                        shortBiography = "",
                     ),
                 isRead = false,
             )
@@ -50,6 +54,10 @@ class StoryUseCase {
                         displayName = "Brandon Loia",
                         followerCount = 3_145_017,
                         isFollowed = true,
+                        coverImage = 0,
+                        followingCount = 0,
+                        locationName = "",
+                        shortBiography = "",
                     ),
                 isRead = true,
             )
@@ -70,6 +78,10 @@ class StoryUseCase {
                         displayName = "Jacob Washington",
                         followerCount = 30,
                         isFollowed = true,
+                        coverImage = 0,
+                        followingCount = 0,
+                        locationName = "",
+                        shortBiography = "",
                     ),
                 isRead = false,
             )
@@ -88,6 +100,10 @@ class StoryUseCase {
                         displayName = "Kate Williams",
                         followerCount = 1,
                         isFollowed = true,
+                        coverImage = 0,
+                        followingCount = 0,
+                        locationName = "",
+                        shortBiography = "",
                     ),
                 isRead = true,
             )

@@ -5,7 +5,7 @@ import kotlin.math.floor
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-val Long.humanReadableFollowerCount: String
+val Long.humanReadableFollowerCountWithText: String
     get() {
         if (this == 1L) return "1 follower"
         val millions = this / 1_000_000

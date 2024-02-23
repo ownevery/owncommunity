@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">owncommunity</string>
-
-    <!-- Bottom navigation -->
     <string name="bottom_navigation_home">Home</string>
     <string name="bottom_navigation_search">Search</string>
     <string name="bottom_navigation_create">Create</string>
@@ -21,4 +19,11 @@
     <string name="search_follower_plural_suffix">s</string>
     <string name="follow_button_follow">Follow</string>
     <string name="follow_button_following">Following</string>
+    <string name="tab_title_posts">Following</string>
+    <string name="tab_title_replies">Replies</string>
+    <string name="tab_title_popular">Popular</string>
+    <string name="tab_title_likes">Likes</string>
+    <string name="edit_profile_button_title">Edit Profile</string>
+    <string name="profile_followers">Followers</string>
+    <string name="profile_following">Following</string>
 </resources>

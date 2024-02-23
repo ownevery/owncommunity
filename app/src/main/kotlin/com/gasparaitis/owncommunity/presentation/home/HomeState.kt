@@ -31,7 +31,7 @@ data class HomeState(
 
     data class OnPostEvent(val postEvent: Post.Event) : Event
 
-    data object NavigateToAlertListScreen : Event
+    data object NavigateToChatListScreen : Event
 
     data object NavigateToStoryListScreen : Event
 

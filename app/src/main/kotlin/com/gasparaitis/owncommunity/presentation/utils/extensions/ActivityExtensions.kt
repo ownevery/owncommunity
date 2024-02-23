@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.activity.ComponentActivity
+import com.gasparaitis.owncommunity.presentation.main.MainActivity
 
 val Context.activity: Activity get() {
     var context = this
@@ -19,6 +20,16 @@ val Context.componentActivity: ComponentActivity
         var context = this
         while (context is ContextWrapper) {
             if (context is ComponentActivity) return context
+            context = context.baseContext
+        }
+        throw IllegalStateException("No activity found...?")
+    }
+
+val Context.mainActivity: MainActivity
+    get() {
+        var context = this
+        while (context is ContextWrapper) {
+            if (context is MainActivity) return context
             context = context.baseContext
         }
         throw IllegalStateException("No activity found...?")
