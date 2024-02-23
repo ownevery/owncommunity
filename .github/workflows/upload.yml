@@ -18,6 +18,14 @@ jobs:
                 java-version: '17'
                 distribution: 'temurin'
                 cache: gradle
+          - name: Grant execute permission for gradlew
+            run: chmod +x gradlew
+          - name: Create google-services.json
+            run: cat /home/runner/work/owncommunity/owncommunity/app/google-services.json | base64
+          - name: Populate google-services.json
+            env:
+              DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
+            run: echo $DATA > /home/runner/work/owncommunity/owncommunity/app/google-services.json
           - name: Build .aab
             run: ./gradlew bundleRelease
           - name: Upload Android Release to Play Store
